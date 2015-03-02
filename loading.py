@@ -4,10 +4,14 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yoc.settings")
 
 from yoccore import models
 
+import csv
+
 class Load():
 
-	@staticmethod
-	def questions():
+	def __init__(self):
+		self.session_ids_parsed = []
+
+	def questions(self):
 
 		models.Question.create('What do you think about what you can see?', 'TX', 1, 1)
 
@@ -37,6 +41,62 @@ class Load():
 		models.Question.create('Age', 'PD', 6, 5)
 
 		models.Question.create('General comments', 'TX', 7, 1)
+
+		return True
+
+	@staticmethod
+	def load_answers_csv():
+
+		with open('answers-export.csv', 'rb') as comments_file:
+
+		comments_reader = csv.reader(comments_file)
+
+		for row in comments_reader:
+
+			session_id = row[-1].strip()
+
+			if session_id not in self.session_ids_parsed:
+				timestamp = row[7].strip()
+				username = row[8].strip()
+
+				models.Session.create(username, timestamp, session_id)
+
+			question_page = int(row[2])
+			question_number = int(row[3])
+			answer_text = row[4]
+
+			models.Answer.create(question_page, question_number, answer_text, session_id)
+
+		return True
+
+	@staticmethod
+	def load_comments_csv():
+
+		with open('comments-export.csv', 'rb') as comments_file:
+
+		comments_reader = csv.reader(comments_file)
+
+		for row in comments_reader:
+
+			session_id = row[-1].strip()
+
+			if session_id not in self.session_ids_parsed:
+				timestamp = row[7].strip()
+				username = row[8].strip()
+
+				models.Session.create(username, timestamp, session_id)
+
+			question_page = 7
+			question_number = 1
+			
+			if row[4] not in ['', ' ', '  ', None]:
+				models.Answer.create(question_page, question_number, row[4].strip(), session_id)
+
+			if row[5] not in ['', ' ', '  ', None]:
+				models.Answer.create(question_page, question_number, row[5].strip(), session_id)
+
+			if row[6] not in ['', ' ', '  ', None]:
+				models.Answer.create(question_page, question_number, row[6].strip(), session_id)
 
 		return True
 
