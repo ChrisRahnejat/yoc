@@ -1,6 +1,7 @@
 import isodate
 
 from django.db import models
+from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 
 class BaseModel(models.Model):
@@ -49,6 +50,10 @@ class BaseModel(models.Model):
     def clear_filtered(cls, **kwargs):
         return cls.objects.filter(**kwargs).delete()
 
+    @classmethod
+    def create(cls, **kwargs):  # overwrite as required
+    	return cls.objects.get_or_create(**kwargs) 
+
 
 class Session(BaseModel):
 
@@ -57,10 +62,10 @@ class Session(BaseModel):
 		('S', 'Shoreditch')
 	)
 
-	session_key = models.CharField(length=50)
-	user_initials = models.Charfield(length=5)
-	location = models.Charfield(length=1, choices=locations)
-	submit_date = models.DateTimeField()
+	session_key = models.CharField(max_length=50)
+	user_initials = models.CharField(max_length=5)
+	location = models.CharField(max_length=1, choices=locations)
+	submit_date = models.DateField()
 
 	class Meta:
 		verbose_name = 'session'
@@ -69,11 +74,11 @@ class Session(BaseModel):
 	@classmethod
 	def create(cls, username, timestamp, session_key):
 
-		submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %I:%M')
+		submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %I:%M').date()
 		location = username[0]
 		user_initials = ''.join([n for n in username if not n.isdigit()])[1:]
 
-		return cls.objects.get_or_create(submit_date=submit_date, location=location, user_initials=user_initials, session_key=session_key)
+		return cls.objects.get_or_create(submit_date=submit_date, location=location, user_initials=user_initials, session_key=session_key) # tuple of object, created TRUE/FALSE
 
 
 class Question(BaseModel):
@@ -85,4 +90,60 @@ class Question(BaseModel):
 		('EN', 'from enums'),
 	)
 
+	question_text = models.TextField()
+	question_type = models.CharField(max_length=2, choices=question_types)
+	question_page = models.IntegerField()
+	question_number = models.IntegerField()
 
+	class Meta:
+		verbose_name = 'question'
+		app_label = 'yoccore'
+
+	@classmethod
+	def create(cls, question_text, question_type, question_page, question_number):
+
+		return cls.objects.get_or_create(question_text=question_text, question_type=question_type, question_page=question_page, question_number=question_number)
+
+
+class Answer(BaseModel):
+
+	question = models.ForeignKey(Question)
+	session = models.ForeignKey(Session)
+	answer_text = models.TextField()
+
+	class Meta:
+		verbose_name = 'answer'
+		app_label = 'yoccore'
+
+	@classmethod
+	def create(cls, question_page, question_number, answer_text, session_key):
+		session_object = Session.objects.get(session_key=session_key)
+		question_object = Question.objects.get(Q(question_number=question_number) & Q(question_page=question_page))
+
+		return cls.objects.get_or_create(question=question_object, session=session_object, answer_text=answer_text)
+
+
+class CleanedAnswer(BaseModel):
+
+	topics = (
+		('GM', 'Gamification'),
+		('FA', 'Financial analysis'),
+		('LE', 'Life events'),
+		('LF', 'Look and feel'),
+		('OT', 'Other')
+	)
+
+	answer = models.ForeignKey(Answer)
+	rating = models.IntegerField()
+	topic = models.CharField(max_length=2, choices=topics)
+	intepretation = models.TextField()
+	quotable = models.BooleanField()
+
+	class Meta:
+		verbose_name = 'session'
+		app_label = 'yoccore'
+
+	@classmethod
+	def create(cls, answer, rating, topic, intepretation, quotable):
+
+		return cls.objects.get_or_create(answer=answer, rating=rating, topic=topic, intepretation=intepretation, quotable=quotable)
