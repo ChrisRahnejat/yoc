@@ -44,64 +44,67 @@ class Load():
 
 		return True
 
-	@staticmethod
-	def load_answers_csv():
+	def load_answers_csv(self):
 
 		with open('answers-export.csv', 'rb') as comments_file:
 
-		comments_reader = csv.reader(comments_file)
+			comments_reader = csv.reader(comments_file)
 
-		for row in comments_reader:
+			for row in comments_reader:
 
-			session_id = row[-1].strip()
+				session_id = row[-1].strip()
 
-			if session_id not in self.session_ids_parsed:
-				timestamp = row[7].strip()
-				username = row[8].strip()
+				if session_id not in self.session_ids_parsed:
+					timestamp = row[7].strip()
+					username = row[8].strip()
 
-				models.Session.create(username, timestamp, session_id)
+					models.Session.create(username, timestamp, session_id)
 
-			question_page = int(row[2])
-			question_number = int(row[3])
-			answer_text = row[4]
+				question_page = int(row[2])
 
-			models.Answer.create(question_page, question_number, answer_text, session_id)
+				# backwards compatibility with old 7 page version of YOC
+				if question_page == 7:
+					question_page = 6
+
+				question_number = int(row[3])
+				answer_text = row[4]
+
+				models.Answer.create(question_page, question_number, answer_text, session_id)
 
 		return True
 
-	@staticmethod
-	def load_comments_csv():
+	def load_comments_csv(self):
 
 		with open('comments-export.csv', 'rb') as comments_file:
 
-		comments_reader = csv.reader(comments_file)
+			comments_reader = csv.reader(comments_file)
 
-		for row in comments_reader:
+			for row in comments_reader:
 
-			session_id = row[-1].strip()
+				session_id = row[-1].strip()
 
-			if session_id not in self.session_ids_parsed:
-				timestamp = row[7].strip()
-				username = row[8].strip()
+				if session_id not in self.session_ids_parsed:
+					timestamp = row[2].strip()
+					username = row[3].strip()
 
-				models.Session.create(username, timestamp, session_id)
+					models.Session.create(username, timestamp, session_id)
 
-			question_page = 7
-			question_number = 1
-			
-			if row[4] not in ['', ' ', '  ', None]:
-				models.Answer.create(question_page, question_number, row[4].strip(), session_id)
+				question_page = 7
+				question_number = 1
+				
+				if row[4] not in ['', ' ', '  ', None]:
+					models.Answer.create(question_page, question_number, row[4].strip(), session_id)
 
-			if row[5] not in ['', ' ', '  ', None]:
-				models.Answer.create(question_page, question_number, row[5].strip(), session_id)
+				if row[5] not in ['', ' ', '  ', None]:
+					models.Answer.create(question_page, question_number, row[5].strip(), session_id)
 
-			if row[6] not in ['', ' ', '  ', None]:
-				models.Answer.create(question_page, question_number, row[6].strip(), session_id)
+				if row[6] not in ['', ' ', '  ', None]:
+					models.Answer.create(question_page, question_number, row[6].strip(), session_id)
 
 		return True
 
-	@classmethod
-	def all(cls):
-		cls.questions()
-
+	def all(self):
+		self.questions()
+		self.load_answers_csv()
+		self.load_comments_csv()
 		return True
