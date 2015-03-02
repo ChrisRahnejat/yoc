@@ -18,7 +18,7 @@ def root(request):
 def login_page(request):
     template = 'yoccore/login.html'
     context = {
-        'pgtitle': 'Welcome to Test Rocket',
+        'pgtitle': 'Welcome',
         'abouttitle': "Log in",
         'loginMethod': 'do_login',
         'loginPage': True,

@@ -294,7 +294,7 @@ span {
     text-align: left;
 }
 
-input[type=radio] {
+input[type=radio], input[type=checkbox] {
     margin: 0 2px;
     margin-top: -1px;
     vertical-align: middle;
@@ -324,6 +324,7 @@ input[type=radio] {
     max-width: 190px;
     font-size: 0.9em;
     font-weight: 700;
+    margin-left: 75%;
 }
 
 .mainButton:hover{
@@ -433,7 +434,7 @@ select {
     border-width: 1px;
     padding: 0 2px;
     font-family: info;
-    height: 2.0em;
+    height: 1.8em;
 }
 
 textarea {
@@ -592,5 +593,46 @@ textarea {
 
 #the_question, #the_answer, #the_form {
     display: none;
-    width: 100%;
+    /*width: 100%;*/
+}
+
+#the_question {
+    margin-right: 30%;
+}
+
+#the_answer {
+    margin-left: 30%;
+    padding-right: 10%;
+}
+
+#cleanup_form > div {
+    margin-top: 30px !important;
+    margin-left: 10px  !important;
+}
+
+.quotable {
+    margin: 4px 0;
+    padding: 5px;
+    cursor: pointer;
+    height: 2em;
+    font-size: 1.1em;
+    /* border-color: #e06a5d; */
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 2px;
+    width: 100px;
+    font-size: 0.9em;
+    font-weight: 700;
+}
+
+#quotable_container, #topic_container {
+    margin-left: 25%;
+}
+
+#topic_container {
+    width: 210px;
+
+}
+.picked {
+    background-color: #ffffff !important;
 }

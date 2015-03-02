@@ -36,6 +36,7 @@ def see_question(request):
             'err_vals': request.session.pop('err_vals', {}),
             'choices': choices,
             'topics': models.CleanedAnswer.topics,
+            'pgtitle': 'help make sense of this'
         }
 
     else:
@@ -56,7 +57,7 @@ def see_question(request):
             a_id = ans.id
 
         context = {'q': q, 'a': a, 'a_id': a_id, 'choices': choices,
-            'topics': models.CleanedAnswer.topics,
+            'topics': models.CleanedAnswer.topics, 'pgtitle': 'help make sense of this'
         }
         request.session['q_ctxt'] = context
 

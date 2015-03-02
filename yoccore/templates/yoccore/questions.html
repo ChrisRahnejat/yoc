@@ -1,42 +1,49 @@
 {% extends "yoccore/base.html" %}
 {% load yoccore_extras %}
 
+{% block msg %}
+    Hi {{ request.user }}
+{% endblock %}
+
 {% block content %}
     <div id="errs">{{request.session.err}}</div>
-    <div id="the_question">{{ q }}</div>
+    <div id="the_question">The question<br/>
+        <span style="margin-left: 20px">{{ q }}</span></div>
     <div id="the_answer">"{{ a }}"</div>
+    <div class="centered lightUnderline" style="width: 80%; height:30px"></div>
     <div id="the_form">
     <form id="cleanup_form" action="{% url 'give_feedback' %}" method="post" autocomplete="off">
 
         {% csrf_token %}
 
-        <div> how would you rate this feedback?</div>
+        <div class="centered">How would you rate this feedback?</div>
 
         <div>
             <label class=choice_label>This is not useful feedback</label>
-            <input type="checkbox" name="not_feedback" value="true" class="radio_choice answ"/>
+            <input id="nf" type="checkbox" name="not_feedback" value="true" class="radio_choice answ"/>
         </div>
 
         <div>
-            <label class=choice_label>It is useful, and I'd say it is</label>
+            <label class=choice_label>It is useful, and I'd say it is</label><br/>
+            <div style="margin-left: 25%">
             {% for i in 5|radio_range%}
-                <label class=choice_label>{{choices|getIndex:forloop.counter0}}</label>
                 <input type="radio" name="rating" value="{{forloop.counter}}" class="radio_choice answ"/>
-            {% endfor %}
+                <label class=choice_label>{{choices|getIndex:forloop.counter}}</label><br/>
+            {% endfor %}</div>
         </div>
 
         <div>
             <div>Is it worth sharing the quote?</div>
-            <input type="hidden" name="quotable" value="false"/>
+            <input id="quotable_field" type="hidden" name="quotable" value="false"/>
             <div id="quotable_container">
-                <button class="quotable" data-val="true">YES</button>
-                <button class="quotable" data-val="false">NO</button>
+                <button class="quotable" data-val="true" style="background-color: #6c9a92">YES</button>
+                <button class="quotable" data-val="false" style="background-color: #e1955e">NO</button>
             </div>
         </div>
 
         <div>
             <div>What topic does this best fit?</div>
-            <select name="topic">
+            <select id="topic_container" name="topic">
                 <option class="choice_label" value disabled selected>select one</option>
                 {% for tp in topics %}
                     <option value="{{ tp.0 }}">{{ tp.1 }}</option>
