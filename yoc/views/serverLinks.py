@@ -16,7 +16,7 @@ def root(request):
 
 # url(r'^login/$', serverLinks.login_page, name='login_page'),
 def login_page(request):
-    template = 'tccore/login.html'
+    template = 'yoccore/login.html'
     context = {
         'pgtitle': 'Welcome to Test Rocket',
         'abouttitle': "Log in",
@@ -69,6 +69,7 @@ def do_login(request):
     common_login(request)
     request.session['user_initials'] = request.user.username
     request.session['ctr'] = 0
+    request.session['q_ctxt'] = {}
 
     next_page = request.POST.get('next_page', 'see_question')
 
@@ -79,5 +80,5 @@ def do_login(request):
 def do_logout(request):
     auth.logout(request)
     logger.info("user %s logged out" % request.user.id)
-    return redirect('tester_rootpage')
+    return redirect('rootpage')
 

@@ -1,10 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends "yoccore/base.html" %}
+{% block content %}
+    <div class="lightUnderline">
 
-</body>
-</html>
+        <form id="loginForm" action="{% url 'do_login' %}" method="post" autocomplete="off">
+
+            {% csrf_token %}
+
+            <input class="loginInput" name="username" type="text" placeholder="username" autofocus/><br/>
+            <input class="loginInput" name="pw" type="password" placeholder="password" /><br/>
+            <input type="hidden" name="next_page" value="{{ next_page|escape }}" /><br/>
+
+            <div class="top-padding">
+                <button class="mainButton alignRight">Sign in</button>
+            </div>
+
+        </form>
+
+    </div>
+{% endblock content %}

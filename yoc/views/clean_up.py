@@ -14,7 +14,7 @@ import validations
 @login_required
 def see_question(request):
 
-    template = 'yoc_app/questions.html'
+    template = 'yoccore/questions.html'
 
     choices = (
         'not applicable',
@@ -26,8 +26,8 @@ def see_question(request):
     )
 
 
+    if request.session['q_ctxt'].get('q',None) is not None and request.session['q_ctxt'].get('a',None) is not None:
 
-    if 'q' in request.session['q_ctxt'].keys() and 'a' in request.session['q_ctxt'].keys():
         context = {
             'q': request.session['q_ctxt']['q'],
             'a': request.session['q_ctxt']['a'],
@@ -44,7 +44,7 @@ def see_question(request):
         # all answer object for this person which need cleaning up
         Q1 = Q(session__user_initials__iexact=user_initials.strip())
         Q2 = Q(done=False)
-        answers = models.Answer.filter(Q1 & Q2)
+        answers = models.Answer.objects.filter(Q1 & Q2)
 
         if len(answers) < 1:
             a, q, a_id = None, None, None
@@ -55,7 +55,9 @@ def see_question(request):
             a = ans.answer_text
             a_id = ans.id
 
-        context = {'q': q, 'a': a, 'a_id': a_id}
+        context = {'q': q, 'a': a, 'a_id': a_id, 'choices': choices,
+            'topics': models.CleanedAnswer.topics,
+        }
         request.session['q_ctxt'] = context
 
 
@@ -87,7 +89,7 @@ def give_feedback(request):
         request.session['err_vals'] = post_data
 
     if err is False:
-        request.session.pop('q_ctxt')
+        request.session['q_ctxt'] = {}
         request.session['ctr'] += 1
 
     return redirect('see_question')
