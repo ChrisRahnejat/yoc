@@ -14,7 +14,7 @@ framework.
 
 """
 import os
-import testcap.settings
+import yoc.settings
 
 # We defer to a DJANGO_SETTINGS_MODULE already in the environment. This breaks
 # if running multiple sites in the same mod_wsgi process. To fix this, use
@@ -33,7 +33,7 @@ from django.core.wsgi import get_wsgi_application
 # application = HelloWorldApplication(application)
 
 
-if testcap.settings.EV =='HEROKU':
+if yoc.settings.EV =='HEROKU':
     ##UNCOMMENT THIS section FOR HEROKU PUSH, COMMENT FOR LOCAL ENVIRONMENT
     from dj_static import Cling
     application = Cling(get_wsgi_application())
