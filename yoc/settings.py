@@ -94,7 +94,7 @@ else:
     import dj_database_url
 
     EV = 'HEROKU'
-    DEBUG = False
+    DEBUG = True
     TEMPLATE_DEBUG = DEBUG
     DATABASES = {}
     DATABASES['default'] = dj_database_url.config()
