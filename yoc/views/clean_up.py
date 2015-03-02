@@ -31,7 +31,7 @@ def see_question(request):
         # all answer object for this person which need cleaning up
         Q1 = Q(session__user_initials__iexact=user_initials.strip())
         Q2 = Q(done=False)
-        answers = models.Answers.filter(Q1 & Q2)
+        answers = models.Answer.filter(Q1 & Q2)
 
         if len(answers) < 1:
             a, q, a_id = None, None, None

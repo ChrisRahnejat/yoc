@@ -1,10 +1,71 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% load url from future %}
+{% load staticfiles %}
+{% load tccore_extras %}
+{% load humanize %}
+{% autoescape on %}
 
-</body>
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>{% if pgtitle %}{{pgtitle}}{% else %}YoC Feedback{% endif %}</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/desktop.css' %}" />
+        <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}" />
+        <script src="{% static 'js/jquery-2.1.3.min.js' %}"></script>
+
+        <link rel="stylesheet" type="text/css" href="{% static 'select2/css/select2.min.css' %}" />
+        <script src="{% static 'select2/js/select2.min.js' %}"></script>
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+
+        <div id="topbar" class="see_layout">
+            <div class="topbar_top">
+                <div class="footer_badge col-1-2" style="height:30px">
+                    <div class="tr_badge"></div>
+                </div>
+                <div class="col-1-2" style="height:30px">
+                    {% block msg %}{% endblock %}
+                </div>
+            </div>
+            <div class="topbar_bottom">
+                <div class="topbarsection col-1-5"></div>
+                <div class="col-6-10 tile_wrap">
+                    <div class="centered center-text vert_center bigger">{{pgtitle}}</div>
+                </div>
+                <div class="see_layout topbarsection col-1-5">
+                {% if not loginPage %}
+                    {% block navs %}{% endblock %}
+                    <div id="logOut" class="see_layout top_right_menu linked" data-href="{% url 'do_logout' %}">Log out</div>
+                {%  endif %}
+                </div>
+            </div>
+        </div>
+
+        <div id="main_body" class="see_layout" style="">{% block content %}{% endblock %}</div>
+        <div id="footer" class="see_layout">
+            <div style="width: 100%; height: 5px"></div>
+            <div style="width: 100%; height:30px">
+                <div class="footer_badge footersection col-1-4" data-href="http://www.boldrocket.com">
+                    <div class="br_badge" style="margin-left: 20px"></div>
+                </div>
+                <div class="footer_badge footersection  col-1-2" data-href="http://www.boldrocket.com">
+                    Contact us <span class="wide_margin">|</span>
+                    About <span class="wide_margin">|</span>
+                    User agreement
+                </div>
+                <div class="see_layout footersection  col-1-4">{% block debug_info %}{% endblock %}</div>
+            </div>
+            <div style="width: 100%; height: 5px"></div>
+
+        </div>
+
+        <script src="{% static 'js/yoc.js' %}"></script>
+{#        <script src="{% static 'js/bootstrap.js' %}"></script>#}
+{#        <script src="{% static 'js/mainfunctions.js' %}"></script>#}
+{#        <script src="{% static 'js/mainhandlers.js' %}"></script>#}
+
+    </body>
 </html>
+{% endautoescape %}

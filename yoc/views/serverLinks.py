@@ -67,6 +67,7 @@ def do_login(request):
     logger.debug('request.POST.iteritems(): %s' % [(k, v) for k, v in request.POST.iteritems()])
 
     common_login(request)
+    request.session['user_initials'] = request.user.username
 
     next_page = request.POST.get('next_page', 'see_question')
 
