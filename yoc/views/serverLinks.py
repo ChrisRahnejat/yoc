@@ -68,6 +68,7 @@ def do_login(request):
 
     common_login(request)
     request.session['user_initials'] = request.user.username
+    request.session['ctr'] = 0
 
     next_page = request.POST.get('next_page', 'see_question')
 

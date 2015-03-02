@@ -1,8 +1,49 @@
 {% extends "yoccore/base.html" %}
-{% block content %}
+{% load yoccore_extras %}
 
+{% block content %}
+    {{request.session.ctr}}
     <div id="the_question">{{ q.question_text }}</div>
     <div id="the_answer">{{ a.answer_text }}</div>
+    <div id="the_form">
+    <form id="cleanup_form" action="{% url give_feedback %}" method="post" autocomplete="off">
+
+        {% csrf_token %}
+
+        <div> how would you rate this feedback?</div>
+
+        <label class=choice_label>This is not useful feedback</label>
+        <input type="checkbox" name="not_feedback" value="true" class="radio_choice answ"/>
+
+        <label class=choice_label>It is useful, and I'd say it is</label>
+        {% for i in 5|radio_range%}
+            <label class=choice_label>{{choices|getIndex:forloop.counter}}</label>
+            <input type="radio" name="rating" value="{{forloop.counter}}" class="radio_choice answ"/>
+        {% endfor %}
+
+        <div>Is it worth sharing the quote?</div>
+        <input type="hidden" name="quotable" value="false"/>
+        <div id="quotable_container">
+            <button class="quotable" data-val="true">YES</button>
+            <button class="quotable" data-val="false">NO</button>
+        </div>
+
+        <div>What topic does this best fit?</div>
+        <select name="topic">
+            <option class="choice_label" value disabled selected>select one</option>
+            {% for tp in topics %}
+                <option value="{{ tp.0 }}">{{ tp.1 }}</option>
+            {% endfor %}
+        </select>
+
+
+        <div class="top-padding">
+            <button class="mainButton alignRight">Submit</button>
+        </div>
+
+    </form>
+
+    </div>
 
 
 {% endblock %}

@@ -16,13 +16,26 @@ def see_question(request):
 
     template = 'yoc_app/questions.html'
 
+    choices = (
+        'not applicable',
+        'negative',
+        'somewhat negative',
+        'neutral',
+        'somewhat postitive',
+        'postitive',
+    )
+
+
+
     if 'q' in request.session['q_ctxt'].keys() and 'a' in request.session['q_ctxt'].keys():
         context = {
             'q': request.session['q_ctxt']['q'],
             'a': request.session['q_ctxt']['a'],
             'a_id': request.session['q_ctxt']['a_id'],
             'err': request.session.pop('err','Submission error'),
-            'err_vals': request.session.pop('err_vals', {})
+            'err_vals': request.session.pop('err_vals', {}),
+            'choices': choices,
+            'topics': models.CleanedAnswer.topics,
         }
 
     else:
@@ -75,5 +88,6 @@ def give_feedback(request):
 
     if err is False:
         request.session.pop('q_ctxt')
+        request.session['ctr'] += 1
 
     return redirect('see_question')

@@ -1,0 +1,130 @@
+/*desktop large window*/
+@media all and ( min-width: 866px ) {
+
+}
+
+
+/*desktop small window*/
+@media all and ( max-width: 865px ) {
+
+}
+
+h1, h2, h3 {
+    width:80%
+}
+  .button_wrapper{
+      height: 65px;
+  }
+
+  .top_right_menu{
+      max-height: 25%;
+      width: 100%;
+      padding: 1% 0;
+      text-align: center;
+      border-bottom: 1px solid #ffffff;
+      font-size: 0.95em;
+  }
+
+  .row {
+	height: 52px;
+	/*display: flex;*/
+	box-sizing: border-box;
+	margin-bottom: 10px;
+	}
+
+  .col-2-3 {
+
+    width: 66%;
+  }
+  .col-1-2 {
+
+    width: 50%;
+    /*margin-right: 2px;*/
+  }
+  .col-1-3 {
+    width: 33%;
+  }
+
+  /*.col-1-3:nth-child(4) {
+    clear: both;
+  }*/
+
+  .col-1-4 {
+
+    width: 25%;
+  }
+
+  .col-1-6 {
+
+    width: 15%;
+  }
+
+  .col-6-10 {
+
+    width: 60%;
+  }
+
+.col-1-10 {
+    width: 10%;
+  }
+
+.col-4-5 {
+    width: 80%;
+  }
+
+.col-1-5 {
+    width: 20%;
+  }
+
+
+
+ .grid:after {
+  content: "";
+  display: table;
+  clear: both;
+  }
+
+.grid-pad {
+     padding: 5px 0 5px 5px;
+     margin: 6px 0;
+}
+
+ .grid-pad > [class*='col-']:last-of-type {
+  padding-right: 20px;
+}
+
+[class*='col-'] {
+  float: left;
+}
+
+[class*='col-']:last-of-type {
+  padding-right: 0;
+}
+
+  .side{
+	position: fixed;
+
+	background: url(../../../../../sep21/img/_background.png);
+	background-repeat: no-repeat;
+	background-size: cover;
+
+	height: 100%;
+	width: 150px;
+	/*opacity: 0.75;*/
+  }
+
+  #right{
+	position: fixed;
+	right: 0px;
+	z-index: -100;
+	bottom: 0;
+	top: 120px;
+	width: 250px;
+	background: url(../../../../../sep21/img/_pattern.png);
+	background-repeat: no-repeat;
+	background-size: 65%;
+	background-position: 105% 0%;
+	/*opacity: 0.45;*/
+  }
+
+
