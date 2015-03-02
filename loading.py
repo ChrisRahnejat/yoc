@@ -104,7 +104,9 @@ class Load():
 		return True
 
 	def all(self):
+		
 		self.questions()
 		self.load_answers_csv()
 		self.load_comments_csv()
+		
 		return True

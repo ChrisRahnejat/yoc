@@ -127,6 +127,9 @@ class Answer(BaseModel):
 		verbose_name = 'answer'
 		app_label = 'yoccore'
 
+	def __unicode__(self):
+		return self.session.__unicode__()
+
 	@classmethod
 	def create(cls, question_page, question_number, answer_text, session_key):
 		session_object = Session.objects.get(session_key=session_key)
@@ -161,8 +164,11 @@ class CleanedAnswer(BaseModel):
 	quotable = models.BooleanField()
 	not_feedback = models.BooleanField(default=False)
 
+	def __unicode__(self):
+		return self.topic
+
 	class Meta:
-		verbose_name = 'session'
+		verbose_name = 'cleaned answer'
 		app_label = 'yoccore'
 
 	@classmethod
