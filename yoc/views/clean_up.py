@@ -59,7 +59,8 @@ def give_feedback(request):
         quotable: BOOL,
         topic: STR, (from models.CleanedAnswer.topics)
         rating: int, (1 to 5)
-        answer_id: int
+        answer_id: int,
+        not_feedback: BOOL (defaults to False ,so optional, but pass True if not feedback)
     """
 
     try:

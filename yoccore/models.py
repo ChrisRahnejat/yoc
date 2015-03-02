@@ -90,6 +90,7 @@ class Question(BaseModel):
 		('NM', 'numerical'),
 		('PD', 'personal details'),
 		('EN', 'from enums'),
+		('SG', 'name suggestions')
 	)
 
 	question_text = models.TextField()
@@ -148,16 +149,17 @@ class CleanedAnswer(BaseModel):
 	rating = models.IntegerField()
 	topic = models.CharField(max_length=2, choices=topics)
 	quotable = models.BooleanField()
+	not_feedback = models.BooleanField(default=False)
 
 	class Meta:
 		verbose_name = 'session'
 		app_label = 'yoccore'
 
 	@classmethod
-	def create(cls, answer_id, rating, topic, quotable):
+	def create(cls, answer_id, rating, topic, quotable, not_feedback=False):
 		answer = Answer.objects.get(pk=answer_id)
 
-		item, success = cls.objects.get_or_create(answer=answer, rating=rating, topic=topic, intepretation=intepretation, quotable=quotable)
+		item, success = cls.objects.get_or_create(answer=answer, rating=rating, topic=topic, intepretation=intepretation, quotable=quotable, not_feedback=not_feedback)
 
 		answer.done = success
 		answer.save()
