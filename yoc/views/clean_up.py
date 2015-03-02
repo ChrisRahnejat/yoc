@@ -3,8 +3,12 @@ __author__ = 'aakh'
 import logging
 logger = logging.getLogger(__name__)
 
+from yoccore import models
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+
 import validations
 
 @login_required
@@ -16,18 +20,29 @@ def see_question(request):
         context = {
             'q': request.session['q_ctxt']['q'],
             'a': request.session['q_ctxt']['a'],
+            'a_id': request.session['q_ctxt']['a_id'],
             'err': request.session.pop('err','Submission error'),
             'err_vals': request.session.pop('err_vals', {})
         }
 
     else:
-        a = None
-        # a = Answers.objects.all() # todo: chris to complete based on model
+        user_initials = request.session['user_initials']  # todo: this needs to work
+        
+        # all answer object for this person which need cleaning up
+        Q1 = Q(session__user_initials__iexact=user_initials.strip())
+        Q2 = Q(done=False)
+        answers = models.Answers.filter(Q1 & Q2)
 
-        q = None
-        # q = a.question__text # todo: chris to complete based on model
+        if len(answers) < 1:
+            a, q, a_id = None, None, None
 
-        context = {'q': q, 'a':a}
+        else:
+            ans = answers[0]
+            q = ans.question.question_text
+            a = ans.answer_text
+            a_id = ans.id
+
+        context = {'q': q, 'a': a, 'a_id': a_id}
         request.session['q_ctxt'] = context
 
 
@@ -42,13 +57,14 @@ def give_feedback(request):
     """
     expected keys for post data are:
         quotable: BOOL,
-        topic: STR,
-        rating: int
+        topic: STR, (from models.CleanedAnswer.topics)
+        rating: int, (1 to 5)
+        answer_id: int
     """
 
     try:
         # todo: chris to complete based on model
-        CleanUps.create(**post_data)
+        models.CleanedAnswer.create(**post_data)
 
     except Exception, e:
         logger.info('Clean Up object creation failed')
