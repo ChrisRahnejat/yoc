@@ -18,3 +18,7 @@ urlpatterns = patterns('',
     url(r'^see_question/$', clean_up.see_question, name='see_question'),
     url(r'^give_feedback/$', clean_up.give_feedback, name='give_feedback'),
 )
+urlpatterns += patterns('',
+                        (
+                        r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
+)
