@@ -5,7 +5,7 @@ import validations
 
 def see_question(request):
 
-    template = 'yoc_app/see_question.html'
+    template = 'yoc_app/questions.html'
 
     if 'q' in request.session['q_ctxt'].keys() and 'a' in request.session['q_ctxt'].keys():
         context = {
@@ -19,7 +19,7 @@ def see_question(request):
         a = None
         # a = Answers.objects.all() # todo: chris to complete based on model
 
-        b = None
+        q = None
         # q = a.question__text # todo: chris to complete based on model
 
         context = {'q': q, 'a':a}
