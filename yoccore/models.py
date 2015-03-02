@@ -76,7 +76,12 @@ class Session(BaseModel):
 	@classmethod
 	def create(cls, username, timestamp, session_key):
 
-		submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %I:%M').date()
+		try:
+			submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %H:%M').date()
+		except ValueError:
+			print "Error: %s was not a valid time stamp, session_key was %s" % (timestamp, session_key)
+			return False
+
 		location = username[0].upper()
 		user_initials = ''.join([n for n in username if not n.isdigit()])[1:].lower()
 
@@ -125,7 +130,12 @@ class Answer(BaseModel):
 	@classmethod
 	def create(cls, question_page, question_number, answer_text, session_key):
 		session_object = Session.objects.get(session_key=session_key)
-		question_object = Question.objects.get(Q(question_number=question_number) & Q(question_page=question_page))
+
+		try:
+			question_object = Question.objects.get(Q(question_number=question_number) & Q(question_page=question_page))
+		except Question.DoesNotExist:
+			print "Error: page %s, question %s not found!" % (question_page, question_number)
+			return False
 
 		if question_object.question_type == 'TX':
 			done = False
@@ -159,7 +169,7 @@ class CleanedAnswer(BaseModel):
 	def create(cls, answer_id, rating, topic, quotable, not_feedback=False):
 		answer = Answer.objects.get(pk=answer_id)
 
-		item, success = cls.objects.get_or_create(answer=answer, rating=rating, topic=topic, intepretation=intepretation, quotable=quotable, not_feedback=not_feedback)
+		item, success = cls.objects.get_or_create(answer=answer, rating=rating, topic=topic, quotable=quotable, not_feedback=not_feedback)
 
 		answer.done = success
 		answer.save()
