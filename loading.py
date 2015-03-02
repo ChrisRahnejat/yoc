@@ -4,12 +4,41 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yoc.settings")
 
 from yoccore import models
 
+from django.contrib.auth.models import User
+
 import csv
 
 class Load():
 
 	def __init__(self):
 		self.session_ids_parsed = []
+
+	def create_users(self):
+
+		users_to_create = (
+			('ap', 'adam'),
+			('crw', 'charlie'),
+			('kcr', 'chris'),
+			('sc', 'sarah c'),
+			('sm', 'sarah m'),
+			('mw', 'mark w'),
+			('at', 'tarver'),
+			('aa', 'ammar'),
+			('cr', '?'),
+			('ec', 'lizzie'),
+			('es', 'eleanor'),
+			('ghg', '?'),
+			('gsm', 'grace'),
+			('hg', 'haley g'),
+			('rg', 'rob geboy'),
+			('wt', 'travis'),
+			('wj', 'will j'),
+		)
+
+		for u in zip(*users_to_create)[0]:
+			User.objects.create_user(username=u, password='%s_yoc' % u)
+
+		return True
 
 	def questions(self):
 
@@ -108,5 +137,6 @@ class Load():
 		self.questions()
 		self.load_answers_csv()
 		self.load_comments_csv()
+		self.create_users()
 		
 		return True
