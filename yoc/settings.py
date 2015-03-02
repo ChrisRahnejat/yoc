@@ -51,8 +51,6 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'yoc.urls'
 
-WSGI_APPLICATION = 'yoc.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -129,6 +127,7 @@ else:
         }
     }
 
+WSGI_APPLICATION = 'yoc.wsgi.application'
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
