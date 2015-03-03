@@ -48,7 +48,7 @@ class QuestionAdmin(DefaultAdmin):
 
 class AnswerAdmin(DefaultAdmin):
 
-    list_display = ('id', 'question', 'answer_text', 'session', 'get_user_initials', 'get_submit_time')
+    list_display = ('id', 'question', 'answer_text', 'session', 'get_user_initials')
     list_display_links = list_display
     inlines = [CleanedAnswerInLine]
     search_fields = ('id', 'question__question_text', 'session__user_initials', 'session__session_key')
@@ -60,11 +60,6 @@ class AnswerAdmin(DefaultAdmin):
     get_user_initials.short_description = 'User'
     get_user_initials.admin_order_field = 'session__user_initials'
 
-    def get_submit_time(self, obj):
-        return obj.session.submit_time
-
-    get_submit_time.short_description = 'submit_time'
-    get_submit_time.admin_order_field = 'session__submit_time'
 
 admin.site.register(m.Session, DefaultAdmin)
 admin.site.register(m.Question, QuestionAdmin)
