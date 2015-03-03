@@ -122,6 +122,25 @@ class Question(BaseModel):
 
         return cls.objects.get_or_create(question_text=question_text, question_type=question_type, question_page=question_page, question_number=question_number)
 
+    def default_topic(self):
+
+        topics = {
+            1: ['LF'],
+            2: ['FA', 'FA', 'LF', 'LF'],
+            3: ['LE', 'LE', 'LF', 'LF'],
+            4: ['GM', 'GM', 'LF', 'LF'],
+            5: ['LE', 'LE', 'LF'],
+            6: ['OT'] * 5,
+            7: ['OT']
+        }
+
+        return topics[self.question_page][self.question_number - 1]
+
+    def default_app(self):
+
+        apps = ['Any', 'Manage Money', 'House Move', 'Spendorama', 'Any', 'Any', 'Any']
+
+        return app[self.question_page - 1]
 
 class Answer(BaseModel):
 
@@ -136,6 +155,48 @@ class Answer(BaseModel):
 
     def __unicode__(self):
         return ' '.join([self.session.__unicode__(), self.question.__unicode__()])
+
+
+    # ANALYSIS SHORTCUTS FOR MAKING IT EASIER TO DEAL WITH DIFFERENT QUESTION TYPES
+    def get_topic(self):
+        """ If Text then return CleanedAnswer topic else return Question topic """
+        x = list(self.cleanedanswer_set.all())
+
+        if len(x) > 0:
+            return x[0].topic
+        else:
+            return self.question.default_topic()
+
+    def get_app(self):
+        """ Return the app it probably refers to (by page) or just "Any" """
+        return self.question.default_app()
+
+    def get_rating(self):
+        """ Return the 1-5 rating (either user input or from CleanedAnswer) """
+        x = list(self.cleanedanswer_set.all())
+
+        if len(x) > 0:
+            return x[0].rating # It was text and we'll return the interpreted rating
+        elif self.question.question_type == 'NM':
+            return self.answer_text # It was a rating to begin with
+        else:
+            return None # It's not text or a rating
+
+    def what_gender(self):
+        try:
+            # Find answer where question is about gender and belongs to this session
+            Qfilter = Q()
+            Qfilter.add(Q(session=self.session), Q.AND)
+            Qfilter.add(Q(question__question_page=6), Q.AND)
+            Qfilter.add(Q(question__question_page=4), Q.AND)
+            
+            ans = Answer.objects.get(Qfilter)
+        except Answer.DoesNotExist:
+            return None # Unknown!!!
+
+        return ans.answer_text # Known - this is the answer
+
+    # /END OF ANALYSIS SHORTCUTS
 
     @classmethod
     def create(cls, question_page, question_number, answer_text, session_key):
