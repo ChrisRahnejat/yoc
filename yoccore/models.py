@@ -162,6 +162,7 @@ class CleanedAnswer(BaseModel):
         ('FA', 'Financial analysis'),
         ('LE', 'Life events'),
         ('LF', 'Look and feel'),
+        ('BR', 'Branch setup'),
         ('OT', 'Other')
     )
 
