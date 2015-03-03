@@ -131,7 +131,7 @@ class Answer(BaseModel):
         app_label = 'yoccore'
 
     def __unicode__(self):
-        return self.session.__unicode__()
+        return ' '.join([self.session.__unicode__(), self.question.__unicode__()])
 
     @classmethod
     def create(cls, question_page, question_number, answer_text, session_key):
@@ -168,7 +168,7 @@ class CleanedAnswer(BaseModel):
     not_feedback = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return self.topic
+        return "CleanedAnswer-%s"%self.id
 
     class Meta:
         verbose_name = 'cleaned answer'
