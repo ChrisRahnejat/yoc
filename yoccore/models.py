@@ -244,8 +244,6 @@ class CleanedAnswer(BaseModel):
     def create(cls, answer, rating=None, topic=None, quotable=False, not_feedback=False):
 
         # answer = Answer.objects.get(pk=answer)
-
-
         item, success = cls.objects.get_or_create(answer=answer, rating=rating,
                                                   topic=topic, quotable=quotable,
                                                   not_feedback=not_feedback)
@@ -254,3 +252,33 @@ class CleanedAnswer(BaseModel):
         answer.save()
 
         return item
+
+    @classmethod
+    def get_quotes(cls, specific_topic=None, specific_app=None, app_exclusive=False):
+        """
+            specific_topic None means don't filter for this, otherwise must be from cls.topics
+            specific_app None means don't filter for this, otherwise must be from:
+            ['Any', 'Manage Money', 'House Move', 'Spendorama']
+            app_exclusive means "this specific answer only" if True, and "this answer plus 'Any'" if False
+
+            Returns a list of quotes
+        """
+
+        Qfilter = Q()
+        Qfilter = Q(quotable=True)
+
+        if specific_topic:
+            Qfilter.add(Q(topic=specific_topic))
+
+        topic_filtered = cls.objects.filter(Qfilter)
+
+        if specific_app:
+            if app_exclusive:
+                final_list = filter(lambda x: x.answer.get_app() == specific_app, topic_filtered)
+            else:
+                final_list = filter(lambda x: x.answer.get_app() in [specific_app, 'Any'], topic_filtered)
+        else:
+            final_list = topic_filtered
+
+        return [f.answer.answer_text for f in final_list]
+
