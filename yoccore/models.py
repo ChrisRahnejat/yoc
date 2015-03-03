@@ -74,7 +74,7 @@ class Session(BaseModel):
         app_label = 'yoccore'
 
     def __unicode__(self):
-        return self.session_key
+        return ' '.join([self.user_initials, self.session_key])
 
     @classmethod
     def create(cls, username, timestamp, session_key):
@@ -88,7 +88,11 @@ class Session(BaseModel):
         location = username[0].upper()
         user_initials = ''.join([n for n in username if not n.isdigit()])[1:].lower()
 
-        return cls.objects.get_or_create(submit_date=submit_date, location=location, user_initials=user_initials, session_key=session_key) # tuple of object, created TRUE/FALSE
+        return cls.objects.get_or_create(submit_date=submit_date,
+
+                                         location=location,
+                                         user_initials=user_initials,
+                                         session_key=session_key) # tuple of object, created TRUE/FALSE
 
 
 class Question(BaseModel):
