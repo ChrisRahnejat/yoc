@@ -33,6 +33,8 @@ class Load():
 			('rg', 'rob geboy'),
 			('wt', 'travis'),
 			('wj', 'will j'),
+			('dj', 'darragh j'),
+			('dr', 'dazzle r'),
 		)
 
 		for u in zip(*users_to_create)[0]:
