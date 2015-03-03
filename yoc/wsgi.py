@@ -40,14 +40,14 @@ if yoc.settings.EV =='HEROKU':
     from dj_static import Cling
     try:
         application = Cling(get_wsgi_application())
-        logger.info('wsgi heroku application done')
-        print 'wsgi heroku application done'
+        # logger.info('wsgi heroku application done')
+        # print 'wsgi heroku application done'
     except Exception,e:
         logger.error('wsgi heroku application error, %s'%e)
-        print 'wsgi heroku application error'
-        print e.message
+        # print 'wsgi heroku application error'
+        # print e.message
     # Assign QuotaGuard to your environment's http_proxy variable
 else:
-    logger.info('wsgi heroku')
-    print 'wsgi'
+    # logger.info('wsgi heroku')
+    # print 'wsgi'
     application = get_wsgi_application()

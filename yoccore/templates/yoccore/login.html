@@ -1,7 +1,11 @@
 {% extends "yoccore/base.html" %}
 {% block content %}
     <div class="lightUnderline">
-
+        <div class="formerrors">
+        {% if request.session.up_error %}Username or password error<br/>{% endif %}
+        {% if request.session.ua_error %}Cannot log in with that username{% endif %}
+        {% if sess_error %}Please login again{% endif %}
+        </div>
         <form id="loginForm" action="{% url 'do_login' %}" method="post" autocomplete="off">
 
             {% csrf_token %}

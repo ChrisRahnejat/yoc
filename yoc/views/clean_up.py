@@ -1,6 +1,6 @@
 __author__ = 'aakh'
 
-import logging
+import logging, json
 logger = logging.getLogger(__name__)
 
 from yoccore import models
@@ -8,8 +8,20 @@ from yoccore import models
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.forms import ModelForm
 
 import validations
+
+
+class CleanUpform(ModelForm):
+    class Meta:
+        model = models.CleanedAnswer
+
+@login_required
+def thanks(request):
+
+    template = 'yoccore/thanks.html'
+    return render(request, template, {} )
 
 @login_required
 def see_question(request):
@@ -50,6 +62,8 @@ def see_question(request):
         if len(answers) < 1:
             a, q, a_id = None, None, None
 
+            return redirect('thanks')
+
         else:
             ans = answers[0]
             q = ans.question.question_text
@@ -68,6 +82,7 @@ def see_question(request):
 def give_feedback(request):
 
     post_data = validations.clean_data(request)
+    form = CleanUpform(request.POST)
     err = False
 
     """
@@ -79,12 +94,18 @@ def give_feedback(request):
         not_feedback: BOOL (defaults to False ,so optional, but pass True if not feedback)
     """
 
-    try:
-        # todo: chris to complete based on model
-        models.CleanedAnswer.create(**post_data)
+    if form.is_valid():
+        dat = form.cleaned_data
+        models.CleanedAnswer.create(**dat)
 
-    except Exception, e:
-        logger.info('Clean Up object creation failed')
+    # try:
+    #     # todo: chris to complete based on model
+    #     models.CleanedAnswer.create(**post_data)
+    #
+    # except Exception, e:
+    #     logger.info('Clean Up object creation failed')
+    #     logger.info('%s'%e.message)
+    else:
         err = True
         request.session['err'] = 'Something went wrong'
         request.session['err_vals'] = post_data
@@ -94,3 +115,5 @@ def give_feedback(request):
         request.session['ctr'] += 1
 
     return redirect('see_question')
+
+

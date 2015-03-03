@@ -51,12 +51,12 @@ def common_login(request):
     if user is None:
         logger.info("user %s not permissioned" % (username))
         request.session.setdefault('up_error', True)
-        return redirect('login')
+        return redirect('login_page')
 
     if not user.is_active:
         logger.info("user %s log in failed" % (username))
         request.session.setdefault('ua_error', True)
-        return redirect('login')
+        return redirect('login_page')
 
     logger.info("user %s authenticated in" % user.id)
 

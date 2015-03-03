@@ -1,4 +1,7 @@
 import isodate
+import logging, json
+logger = logging.getLogger(__name__)
+
 from datetime import datetime
 
 from django.db import models
@@ -51,133 +54,137 @@ class BaseModel(models.Model):
 
     @classmethod
     def create(cls, **kwargs):  # overwrite as required
-    	return cls.objects.get_or_create(**kwargs) 
+        return cls.objects.get_or_create(**kwargs)
 
 
 class Session(BaseModel):
 
-	locations = (
-		('M', 'Moorgate'),
-		('S', 'Shoreditch')
-	)
+    locations = (
+        ('M', 'Moorgate'),
+        ('S', 'Shoreditch')
+    )
 
-	session_key = models.CharField(max_length=50)
-	user_initials = models.CharField(max_length=5)
-	location = models.CharField(max_length=1, choices=locations)
-	submit_date = models.DateField()
+    session_key = models.CharField(max_length=50)
+    user_initials = models.CharField(max_length=5)
+    location = models.CharField(max_length=1, choices=locations)
+    submit_date = models.DateField()
 
-	class Meta:
-		verbose_name = 'session'
-		app_label = 'yoccore'
+    class Meta:
+        verbose_name = 'session'
+        app_label = 'yoccore'
 
-	def __unicode__(self):
-		return self.session_key
+    def __unicode__(self):
+        return self.session_key
 
-	@classmethod
-	def create(cls, username, timestamp, session_key):
+    @classmethod
+    def create(cls, username, timestamp, session_key):
 
-		try:
-			submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %H:%M').date()
-		except ValueError:
-			print "Error: %s was not a valid time stamp, session_key was %s" % (timestamp, session_key)
-			return False
+        try:
+            submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %H:%M').date()
+        except ValueError:
+            print "Error: %s was not a valid time stamp, session_key was %s" % (timestamp, session_key)
+            return False
 
-		location = username[0].upper()
-		user_initials = ''.join([n for n in username if not n.isdigit()])[1:].lower()
+        location = username[0].upper()
+        user_initials = ''.join([n for n in username if not n.isdigit()])[1:].lower()
 
-		return cls.objects.get_or_create(submit_date=submit_date, location=location, user_initials=user_initials, session_key=session_key) # tuple of object, created TRUE/FALSE
+        return cls.objects.get_or_create(submit_date=submit_date, location=location, user_initials=user_initials, session_key=session_key) # tuple of object, created TRUE/FALSE
 
 
 class Question(BaseModel):
 
-	question_types = (
-		('TX', 'text'),
-		('NM', 'numerical'),
-		('PD', 'personal details'),
-		('EN', 'from enums'),
-		('SG', 'name suggestions')
-	)
+    question_types = (
+        ('TX', 'text'),
+        ('NM', 'numerical'),
+        ('PD', 'personal details'),
+        ('EN', 'from enums'),
+        ('SG', 'name suggestions')
+    )
 
-	question_text = models.TextField()
-	question_type = models.CharField(max_length=2, choices=question_types)
-	question_page = models.IntegerField()
-	question_number = models.IntegerField()
+    question_text = models.TextField()
+    question_type = models.CharField(max_length=2, choices=question_types)
+    question_page = models.IntegerField()
+    question_number = models.IntegerField()
 
-	class Meta:
-		verbose_name = 'question'
-		app_label = 'yoccore'
+    class Meta:
+        verbose_name = 'question'
+        app_label = 'yoccore'
 
-	def __unicode__(self):
-		return self.question_text
+    def __unicode__(self):
+        return self.question_text
 
-	@classmethod
-	def create(cls, question_text, question_type, question_page, question_number):
+    @classmethod
+    def create(cls, question_text, question_type, question_page, question_number):
 
-		return cls.objects.get_or_create(question_text=question_text, question_type=question_type, question_page=question_page, question_number=question_number)
+        return cls.objects.get_or_create(question_text=question_text, question_type=question_type, question_page=question_page, question_number=question_number)
 
 
 class Answer(BaseModel):
 
-	question = models.ForeignKey(Question)
-	session = models.ForeignKey(Session)
-	answer_text = models.TextField()
-	done = models.BooleanField(default=False)
+    question = models.ForeignKey(Question)
+    session = models.ForeignKey(Session)
+    answer_text = models.TextField()
+    done = models.BooleanField(default=False)
 
-	class Meta:
-		verbose_name = 'answer'
-		app_label = 'yoccore'
+    class Meta:
+        verbose_name = 'answer'
+        app_label = 'yoccore'
 
-	def __unicode__(self):
-		return self.session.__unicode__()
+    def __unicode__(self):
+        return self.session.__unicode__()
 
-	@classmethod
-	def create(cls, question_page, question_number, answer_text, session_key):
-		session_object = Session.objects.get(session_key=session_key)
+    @classmethod
+    def create(cls, question_page, question_number, answer_text, session_key):
+        session_object = Session.objects.get(session_key=session_key)
 
-		try:
-			question_object = Question.objects.get(Q(question_number=question_number) & Q(question_page=question_page))
-		except Question.DoesNotExist:
-			print "Error: page %s, question %s not found!" % (question_page, question_number)
-			return False
+        try:
+            question_object = Question.objects.get(Q(question_number=question_number) & Q(question_page=question_page))
+        except Question.DoesNotExist:
+            print "Error: page %s, question %s not found!" % (question_page, question_number)
+            return False
 
-		if question_object.question_type == 'TX':
-			done = False
-		else:
-			done = True
+        if question_object.question_type == 'TX':
+            done = False
+        else:
+            done = True
 
-		return cls.objects.get_or_create(question=question_object, session=session_object, answer_text=answer_text, done=done)
+        return cls.objects.get_or_create(question=question_object, session=session_object, answer_text=answer_text, done=done)
 
 
 class CleanedAnswer(BaseModel):
 
-	topics = (
-		('GM', 'Gamification'),
-		('FA', 'Financial analysis'),
-		('LE', 'Life events'),
-		('LF', 'Look and feel'),
-		('OT', 'Other')
-	)
+    topics = (
+        ('GM', 'Gamification'),
+        ('FA', 'Financial analysis'),
+        ('LE', 'Life events'),
+        ('LF', 'Look and feel'),
+        ('OT', 'Other')
+    )
 
-	answer = models.ForeignKey(Answer)
-	rating = models.IntegerField()
-	topic = models.CharField(max_length=2, choices=topics)
-	quotable = models.BooleanField()
-	not_feedback = models.BooleanField(default=False)
+    answer = models.ForeignKey(Answer)
+    rating = models.IntegerField(null=True, blank=True)
+    topic = models.CharField(max_length=2, choices=topics, null=True, blank=True)
+    quotable = models.BooleanField(default=False)
+    not_feedback = models.BooleanField(default=False)
 
-	def __unicode__(self):
-		return self.topic
+    def __unicode__(self):
+        return self.topic
 
-	class Meta:
-		verbose_name = 'cleaned answer'
-		app_label = 'yoccore'
+    class Meta:
+        verbose_name = 'cleaned answer'
+        app_label = 'yoccore'
 
-	@classmethod
-	def create(cls, answer_id, rating, topic, quotable, not_feedback=False):
-		answer = Answer.objects.get(pk=answer_id)
+    @classmethod
+    def create(cls, answer, rating=None, topic=None, quotable=False, not_feedback=False):
 
-		item, success = cls.objects.get_or_create(answer=answer, rating=rating, topic=topic, quotable=quotable, not_feedback=not_feedback)
+        # answer = Answer.objects.get(pk=answer)
 
-		answer.done = success
-		answer.save()
 
-		return item
+        item, success = cls.objects.get_or_create(answer=answer, rating=rating,
+                                                  topic=topic, quotable=quotable,
+                                                  not_feedback=not_feedback)
+
+        answer.done = success
+        answer.save()
+
+        return item

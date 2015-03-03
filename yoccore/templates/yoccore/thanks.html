@@ -1,0 +1,11 @@
+{% extends "yoccore/base.html" %}
+{% load yoccore_extras %}
+
+{% block msg %}
+    Hi {{ request.user }}
+{% endblock %}
+
+{% block content %}
+ <div id="thanks" data-href="/do_logout"></div>
+ <div id="thanks_msg" class="center-text" data-href="/do_logout">you did it. nothing more to do here.</div>
+{% endblock content %}

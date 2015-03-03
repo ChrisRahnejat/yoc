@@ -13,8 +13,8 @@ html, input, select, textarea, button {
     font-family: 'Lato', sans-serif !important;
     /*font-variant: all-small-caps !important;*/
     font-size: large !important;
-    /*font-variant: small-caps;*/
-    font-weight: 200;
+    font-variant: small-caps;
+    font-weight: 400;
 }
 
 input, select, textarea {
@@ -169,6 +169,7 @@ span {
     padding: 3%;
     max-width: 800px;
 }
+
 .tester_login_section {
     margin: 20px 0;
 }
@@ -277,7 +278,7 @@ span {
 }
 
 .choice_label {
-    font-size: 90%!important;
+    /*font-size: 90%!important;*/
     vertical-align: text-bottom;
     font-weight: 400;
 }
@@ -598,11 +599,13 @@ textarea {
 
 #the_question {
     margin-right: 30%;
+    margin-bottom: 10px;
 }
 
 #the_answer {
     margin-left: 30%;
     padding-right: 10%;
+    margin-bottom: 10px;
 }
 
 #cleanup_form > div {
@@ -610,7 +613,7 @@ textarea {
     margin-left: 10px  !important;
 }
 
-.quotable {
+.quotable, .not_fb {
     margin: 4px 0;
     padding: 5px;
     cursor: pointer;
@@ -625,14 +628,49 @@ textarea {
     font-weight: 700;
 }
 
-#quotable_container, #topic_container {
+#quotable_container, #topic_container, #not_fb_container {
     margin-left: 25%;
+    margin-top: 10px;
 }
 
 #topic_container {
     width: 210px;
-
+    cursor: pointer;
 }
+
 .picked {
     background-color: #ffffff !important;
+}
+
+.blocked {
+    background-color: #666666 !important;
+}
+
+#rocket{
+    background-image: url("../rocket.png");
+    top:140px;
+    width: 80%;
+    margin: 0 auto;
+    bottom: 100px;
+}
+
+#thanks {
+    height: 300px;
+    width: 300px;
+    margin: 0 auto;
+    background-image: url("../thanks.png");
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+#thanks_msg {
+    font-size: 1.5em;
+    margin: 20px auto;
+
+}
+
+#nf {
+    margin-left: 10px;
 }
