@@ -2,7 +2,10 @@
 {% load yoccore_extras %}
 
 {% block msg %}
-    Hi {{ request.user }}
+    Hi {{ request.user }} --
+    {% if request.session.q_left == 1 %}one more to go!
+    {% else %}{{request.session.q_left}} to go
+    {% endif %}
 {% endblock %}
 
 {% block content %}

@@ -74,6 +74,7 @@ def see_question(request):
             'topics': models.CleanedAnswer.topics, 'pgtitle': 'help make sense of this'
         }
         request.session['q_ctxt'] = context
+        request.session['q_left'] = len(answers)
 
 
     return render(request, template, context)

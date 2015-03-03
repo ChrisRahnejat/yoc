@@ -11,7 +11,7 @@ $(document).ready(function(){
 });
 
 
-$('.quotable').on('click', function(){
+$('.quotable').on('click', function(event){
     event.preventDefault() // stops form submission
     if ($(this).hasClass('blocked')){
         console.log('blocked')
@@ -26,7 +26,7 @@ $('.quotable').on('click', function(){
 
 });
 
-$('.not_fb').on('click', function(){
+$('.not_fb').on('click', function(event){
     event.preventDefault() // stops form submission
 
     $('.not_fb').removeClass('picked')
@@ -53,7 +53,7 @@ $('.not_fb').on('click', function(){
 
 
 
-$('#logOut').on('click', function() {
+$('#logOut').on('click', function(event) {
     event.preventDefault() // stops form submission
     if ($(this).data("href")) {
         window.location = $(this).data("href");
