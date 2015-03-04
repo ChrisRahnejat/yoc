@@ -19,6 +19,12 @@ urlpatterns = patterns('',
     url(r'^see_question/$', clean_up.see_question, name='see_question'),
     url(r'^give_feedback/$', clean_up.give_feedback, name='give_feedback'),
     url(r'^thanks/$', clean_up.thanks, name='thanks'),
+
+    # NVD3 URLS
+    url(r'^grapher_view/$', visuals.grapher_view, name='grapher_view'),
+    url(r'^get_some_quotes/$', visuals.get_some_quotes, name='get_some_quotes'),
+    url(r'^get_name_rankings/$', visuals.get_name_rankings, name='get_name_rankings'),
+    url(r'^feedback_quotes_for_app/$', visuals.feedback_quotes_for_app, name='feedback_quotes_for_app'),
 )
 urlpatterns += patterns('',
                         (

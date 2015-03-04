@@ -239,7 +239,7 @@ class Answer(BaseModel):
             done = True
 
         try:
-            existing_object = cls.objects.get(Q(question=question_object) & Q(answer_text=answer_text) & Q(session_key=session_key))
+            existing_object = cls.objects.get(Q(question=question_object) & Q(answer_text=answer_text) & Q(session=session_object))
             return (existing_object, False)
         except cls.DoesNotExist:
             return cls.objects.get_or_create(question=question_object, session=session_object, answer_text=answer_text, done=done)

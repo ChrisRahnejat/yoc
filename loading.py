@@ -139,6 +139,6 @@ class Load():
 		self.questions()
 		self.load_answers_csv()
 		self.load_comments_csv()
-		self.create_users()
+		# self.create_users()
 		
 		return True
