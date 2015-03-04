@@ -207,6 +207,20 @@ class Answer(BaseModel):
 
         return ans.answer_text # Known - this is the answer
 
+    def what_age(self):
+        try:
+            # Find answer where question is about age and belongs to this session
+            Qfilter = Q()
+            Qfilter.add(Q(session=self.session), Q.AND)
+            Qfilter.add(Q(question__question_page=6), Q.AND)
+            Qfilter.add(Q(question__question_page=5), Q.AND)
+            
+            ans = Answer.objects.get(Qfilter)
+        except Answer.DoesNotExist:
+            return None # Unknown!!!
+
+        return ans.answer_text # Known - this is the answer
+
     # /END OF ANALYSIS SHORTCUTS
 
     @classmethod
@@ -224,7 +238,11 @@ class Answer(BaseModel):
         else:
             done = True
 
-        return cls.objects.get_or_create(question=question_object, session=session_object, answer_text=answer_text, done=done)
+        try:
+            existing_object = cls.objects.get(Q(answer_text=answer_text) & Q(session_key=session_key))
+            return (existing_object, False)
+        except:
+            return cls.objects.get_or_create(question=question_object, session=session_object, answer_text=answer_text, done=done)
 
 
 class CleanedAnswer(BaseModel):
