@@ -37,9 +37,9 @@ def grapher_view(request):
         'landing': 'welcome',
     }
 
-    def do_grapher(outcome, desired_series, **desired_filters):
+    def do_grapher(desired_series, **desired_filters):
         """
-            outcome: 'count' or 'average'
+           //DEPRECATED KEY: outcome: 'count' or 'average'
             desired_series: 'age', total', 'gender', 'topic' or 'branch'
             desired_filters may have the following key / value pairings:
                 *   'age': list of age categories, subset of [''>55','46-55','26-35','<18','36-45','18-25']
@@ -55,7 +55,7 @@ def grapher_view(request):
 
         grapher = TimeDependentGraph(START_DATE, end_date=END_DATE)
 
-        grapher.create_y_series(outcome, desired_series, **desired_filters)
+        grapher.create_y_series(desired_series, **desired_filters)
 
         return grapher.get_data()
 
@@ -64,15 +64,15 @@ def grapher_view(request):
             Acceptable keys for POST can be seen here
         """
         
-        try:
-            outcome = cpost['outcome']
-        except KeyError:
-            logger.info("No outcome provided for grapher")
-            return False
+        # try:
+        #     outcome = cpost['outcome']
+        # except KeyError:
+        #     logger.info("No outcome provided for grapher")
+        #     return False
 
-        if outcome not in ['count', 'average']:
-            logger.info("outcome provided %s was not valid" % outcome)
-            return False
+        # if outcome not in ['count', 'average']:
+        #     logger.info("outcome provided %s was not valid" % outcome)
+        #     return False
 
         try:
             desired_series = cpost['desired_series']
@@ -123,14 +123,14 @@ def grapher_view(request):
         for k in keys_to_kill:
             desired_filters.pop(k, None)
 
-        return outcome, desired_series, desired_filters
+        return desired_series, desired_filters
 
     
     post = validations.clean_data(request)
 
-    outcome, desired_series, desired_filters = return_cleaned_grapher_inputs(post)
+    desired_series, desired_filters = return_cleaned_grapher_inputs(post)
 
-    data = do_grapher(outcome, desired_series, **desired_filters)
+    data = do_grapher(desired_series, **desired_filters)
 
     if data == False:
         return redirect("fuckity fuck")  # todo: some valid redirect
@@ -263,10 +263,50 @@ def get_name_rankings(request):
 
 def feedback_quotes_for_app(request):
     """
-        POST: 'app': 'Manage Money', 'House Move', 'Spendorama' or 'Any'
+        POST
+
+        Returns structure:
+        {
+            'Manage Money': quotes...,
+            'House Move': quotes...,
+            'Spendorama': quotes...,
+            'Any': quotes (about multiple, any or non-app specific)...
+        }
+
     """
 
-    pass
+    # todo: EDIT HERE!
+    template = 'yoccore/vis.html'
+    context = {
+        'pgtitle': 'graphs',
+        'landing': 'welcome',
+    }
+
+    apps = {
+        'Manage Money': 2, 
+        'House Move': 3, 
+        'Spendorama': 4,
+        'Any': None
+    }
+
+    data = {}
+
+    for app in apps:
+        page_number = apps[app]
+
+        this_filter = Q()
+        this_filter.add(Q(quotable=True), Q.AND)
+
+        if page_number != None:
+            this_filter.add(Q(answer__question__question_page=page_number), Q.AND)
+
+        quotes = CleanedAnswer.objects.filter(this_filter).values_list('answer__answer_text', flat=True)
+
+        data.setdefault(app, quotes)
+
+    context.update({'data': data})
+
+    return render(request, template, context)
 
     
 class TimeDependentGraph(object):
