@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 from django.db.models import Q
 from yoccore import models
-import validations
+from views import validations
 
 
 class TimeDependentGraph(object):

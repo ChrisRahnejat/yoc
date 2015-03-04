@@ -270,4 +270,3 @@ def feedback_quotes_for_app(request):
         data.setdefault(app, quotes)
 
     return HttpResponse(json.dumps(data), content_type="application/json")
-

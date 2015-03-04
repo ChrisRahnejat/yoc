@@ -81,8 +81,14 @@ class Session(BaseModel):
         try:
             submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %H:%M').date()
         except ValueError:
-            print "Error: %s was not a valid time stamp, session_key was %s" % (timestamp, session_key)
-            return False
+            try:
+                submit_date = datetime.strptime(timestamp.strip(), '%d-%m-%Y%n%H:%M').date()
+            except ValueError:
+                try:
+                    submit_date = datetime.strptime(timestamp.strip(), '%Y-%m-%d %H:%M:%S').date()
+                except ValueError:
+                    print "Error: %s was not a valid time stamp, session_key was %s" % (timestamp, session_key)
+                    return False
 
         location = username[0].upper()
         user_initials = ''.join([n for n in username if not n.isdigit()])[1:].lower()
@@ -239,7 +245,7 @@ class Answer(BaseModel):
             done = True
 
         try:
-            existing_object = cls.objects.get(Q(question=question_object) & Q(answer_text=answer_text) & Q(session_key=session_key))
+            existing_object = cls.objects.get(Q(question=question_object) & Q(answer_text=answer_text) & Q(session=session_object))
             return (existing_object, False)
         except cls.DoesNotExist:
             return cls.objects.get_or_create(question=question_object, session=session_object, answer_text=answer_text, done=done)
