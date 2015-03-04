@@ -221,7 +221,7 @@ class TimeDependentGraph(object):
 
         y_series_c = {
             'cumulative': True,
-            'data': this_series_c, # todo: add different series types
+            'data': count_series_c, # todo: add different series types
             'name': "%s (cumulative)" % name
         }
 
