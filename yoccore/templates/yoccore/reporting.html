@@ -21,7 +21,12 @@
                 <div class="chart_header col-9-10"></div>
                 <div class="chart_section_toggle col-1-10">x</div>
             </div>
-            <div class="grid chart_container"></div>
+            <div class="grid chart_container" data-report_num="{{ forloop.counter }}">
+                <div class="filters">
+                    {# todo: create select box for each item in filter #}
+                </div>
+                <div class="chart_area"></div>
+            </div>
         </div>
 
         {% if forloop.counter|divisibleby:2 %}

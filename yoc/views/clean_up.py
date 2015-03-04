@@ -19,7 +19,24 @@ class CleanUpform(ModelForm):
 def reporting(request):
 
     template = 'yoccore/reporting.html'
-    return render(request, template, {})
+
+    supported_ages = ['>55','46-55','26-35','<18','36-45','18-25']
+    supported_genders = ['Male', 'Female', 'Would rather not disclose', 'Other']
+    age_filter = {'age':supported_ages}
+    gender_filter = {'gender':supported_genders}
+    branch_filter = {'branch':['m','s']}
+
+    ctxt = {'filters':[
+        [gender_filter, age_filter],
+        [branch_filter, gender_filter, age_filter],
+        [branch_filter, gender_filter, age_filter],
+        [branch_filter, age_filter],
+        [branch_filter, gender_filter],
+        [branch_filter, gender_filter, age_filter],
+        [branch_filter, gender_filter, age_filter],
+    ]}
+
+    return render(request, template, ctxt)
 
 @login_required
 def thanks(request):
