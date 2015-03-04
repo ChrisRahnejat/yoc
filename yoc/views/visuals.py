@@ -1,6 +1,7 @@
 __author__ = 'aakh'
 
 import logging, json
+import calendar
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 logger = logging.getLogger(__name__)
@@ -8,8 +9,8 @@ logger = logging.getLogger(__name__)
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-
 from yoccore import models
+import validations
 
 @login_required
 def get_session_serie(request):
@@ -59,7 +60,9 @@ class TimeDependentGraph(object):
 
         # initialise
         self.x_series = []  # just a list of datetime objects
+        self.x_series_utc = []  # just a list of ints for utc timestamp in ms
         self.y_series = []
+        self.y_series_c = []
         # Template for y_series:
         # [{
         #     'cumulative': bool,
@@ -91,6 +94,7 @@ class TimeDependentGraph(object):
             # date accuracy is enough
             # data points are stored as datetime, edit here if this changes
             self.x_series.append(current_step)
+            self.x_series_utc.append(calendar.timegm( current_step.utctimetuple() * 1000 ))
 
             # if days
             if self.__step_size == 'D':
@@ -100,7 +104,38 @@ class TimeDependentGraph(object):
             elif self.__step_size == 'M':
                 current_step = current_step + relativedelta(months=1)
 
-    def __create_new_y_series(self, desired_series, name, outcome='count', **seriesQ):
+    def filtered_datum(self, desired_series, seriesQ):
+
+        if desired_series in ['age', 'gender']:
+            answers = list(models.Answer.objects.filter(seriesQ['series']).exclude(question__question_type__iexact='PD'))
+            yoc_sessions = [a.session for a in answers]
+            cleaned_answers = models.CleanedAnswer.objects.filter(answer__in=answers, not_feedback=False)
+
+        elif desired_series == 'topic':
+            cleaned_answers = models.CleanedAnswer.objects.filter(not_feedback=False).filter(seriesQ['series'])
+
+            answers1 = models.Answer.objects.filter(id__in=cleaned_answers.values_list('answer', flat=True))
+            # and get Answer objects where get_topic evaluates to the desired criteria
+            answers2 = filter(lambda x: x.get_topic(*cleaned_answers) in zip(*seriesQ['series'].children)[1],
+                              models.Answer.objects.exclude(id__in=cleaned_answers.values_list('answer', flat=True)))
+
+            answers = list(set(list(answers1)+list(answers2)))
+            yoc_sessions = [a.session_id for a in answers]
+
+
+        elif desired_series == 'branch':
+            yoc_sessions = models.Session.objects.filter(seriesQ['series'])
+            answers = models.Answer.objects.filter(session__in=yoc_sessions)
+            cleaned_answers = models.CleanedAnswer.objects.filter(answer__in=answers, not_feedback=False)
+
+        else:
+            yoc_sessions = models.Session.objects.all()
+            answers = models.Answer.objects.all()
+            cleaned_answers = models.CleanedAnswer.objects.all()
+
+        return {'yoc_sessions':list(yoc_sessions), 'answers':list(answers), 'cleaned_answers':list(cleaned_answers)}
+
+    def __create_new_y_series(self, desired_series, name, **seriesQ):
         """
         Creates two y_series (a cumulative and non_cumulative) count of
         feedback over time for the given set of filters.
@@ -114,106 +149,91 @@ class TimeDependentGraph(object):
 
         # initialise
         # Non-cumulative
-        this_series_nc = [0]
-        sources = []
+        count_series_nc = [0]
+        avg_series_nc = [0]
+        tot_series_nc = [0]
+
 
         # Cumulative
-        this_series_c = [0]
+        count_series_c = [0]
+        avg_series_c = [0]
+        tot_series_c = [0]
 
-        # filters = {'answersQ':answersQ,
-        #            'cleanedQ': cleanedQ,
-        #            'sessionQ': sessionQ}
+        # get answers, cleaned_answers and session data for the desired series eg gender = Male
+        datum = self.filtered_datum(desired_series, seriesQ)
 
-        if desired_series in ['age', 'gender']:
-            yoc_sessions = models.Answer.objects.filter(seriesQ['series']).values_list('session_id', flat=True)
-            answers = models.Answer.objects.filter(session__id__in=
-                                                   yoc_sessions).exclude(question__question_type__iexact='PD')
-            cleaned_answers = models.CleanedAnswer.objects.filter(answer__in=answers)
+        #apply series level filters
+        try:
+            datum['yoc_sessions'] = filter(lambda x: x.location in zip(*seriesQ['sessionQ'].children)[1],
+                                       datum['yoc_sessions'])
+        except:
+            logger.debug("seriesQ['sessionQ'] is empty")
 
-        elif desired_series == 'topic':
-            cleaned_answers = models.CleanedAnswer.objects.filter(seriesQ['series'])
-            answers = models.Answer.objects.filter(id__in=cleaned_answers.values_list('answer', flat=True))
-            # todo: and get Answer objects where get_topic evaluates to the desired criteria
-            # answers = filter(lambda x: x.get_topic()=seriesQ['series'], all_answers)
-            yoc_sessions = answers.values_list('session_id', flat=True)
+        try:
+            datum['cleaned_answers'] = filter(lambda x: x.topic() in zip(*seriesQ['cleanedQ'].children)[1],
+                                       datum['cleaned_answers'])
+        except:
+            logger.debug("seriesQ['cleanedQ'] is empty")
+
+        try:
+            datum['answers'] = filter(lambda x: x.answer_text in zip(*seriesQ['answersQ'].children)[1],
+                                       datum['answers'])
+        except:
+            logger.debug("seriesQ['answersQ'] is empty")
 
 
-        elif desired_series == 'branch':
-            yoc_sessions = models.Session.filter(seriesQ['series'])
-
-        for q in seriesQ:pass #todo: add other filters onto the querysets created above [or the lists]
+        try:
+            datum['answers'] = filter(lambda x: x.get_topic(*datum['cleaned_answers']) in zip(*seriesQ['cleanedQ'].children)[1],
+                                       datum['answers'])
+        except:
+            logger.debug("seriesQ['cleanedQ'] is empty (topic filter)")
 
         # start at 0, could start with all feedback before start but this could
         #  give very erroneous looking data if trying to crop into a data-set
-
         for i, upper in enumerate(self.x_series[1:]):
             # upper will be the top of the bin (exclusive)
             # lower will be the bottom of the bin (inclusive)
             lower = self.x_series[i]
 
-            # build the filters to apply to Feedback to find feedback in bin
-            this_filter = Q()
+            datum_capped = filter(lambda x: x.session.submit_date < upper.date(), datum['answers'])
+            cleaned_datum_capped = filter(lambda x: x.answer.session.submit_date < upper.date(), datum['cleaned_answers'])
 
-            # add any additional filters that were passed in
-            for Qs in seriesQ:
-                this_filter.add(Qs, Q.AND)
+            datum_bounded = filter(lambda x: x.session.submit_date >= lower.date(), datum_capped)
+            cleaned_datum_bounded = filter(lambda x: x.answer.session.submit_date >= lower.date(), cleaned_datum_capped)
 
-            # very important to use submit and not created or last updated otherwise
-            # we'll have the wrong stuff!
-            if name == 'Session':
-                this_filter.add(Q(submit_date__lte=upper), Q.AND)
-                this_filter.add(Q(submit_date__gt=lower), Q.AND)
-                sources.append(self.session_source)
-
-            else:
-                # if name == 'Answer':
-                this_filter.add(Q(session__submit_date__lte=upper), Q.AND)
-                this_filter.add(Q(session__submit_date__gt=lower), Q.AND)
-                sources.append(self.answer_source)
-
-                # if name == 'CleanedAnswer':
-                this_filter.add(Q(answer__session__submit_date__lte=upper), Q.AND)
-                this_filter.add(Q(answer__session__submit_date__gt=lower), Q.AND)
-                sources.append(self.cleaned_source)
-
-
+            logger.info('passing count')
             # Just count the feedback that this applies to
-            if outcome == 'count':
-                ctr = 0
-                try:
-                    for source in sources: ctr += source.filter(this_filter).count()
-                except Exception, e:
-                    logger.error(e.message)
-                    return False
+            count_series_nc.append(len(datum_bounded))
 
-            elif outcome == 'average':
-                logger.info('passing average')
-                pass
+            logger.info('passing average')
+            data_to_average = [x.get_rating(*cleaned_datum_bounded) for x in datum_bounded]
+            avg_series_nc.append(validations.Numbers.average_list(data_to_average))
 
-            # The count is the new y value for this series
-            this_series_nc.append(ctr)
+            logger.info('passing total')
+            # data_to_sum = [x.get_rating(*cleaned_datum_bounded) for x in datum_bounded]
+            tot_series_nc.append(validations.Numbers.sum_list(data_to_average))
 
-            # total count is the new value for the cumulative (includes new
-            # value)
-            this_series_c.append(sum(this_series_nc))
+            count_series_c.append(sum(count_series_nc))
+            avg_series_c.append(sum(avg_series_nc))
+            tot_series_c.append(sum(tot_series_nc))
 
         # Once we reach this point our series is complete
 
         y_series_c = {
             'cumulative': True,
-            'data': this_series_c,
+            'data': this_series_c, # todo: add different series types
             'name': "%s (cumulative)" % name
         }
 
         y_series_nc = {
             'cumulative': False,
-            'data': this_series_nc,
+            'data': count_series_nc,
             'name': "%s (non-cumulative)" % name
         }
 
         # append to output
-        self.y_series.append(y_series_c)
-        self.y_series.append(y_series_nc)
+        self.y_series_c.append({y_series_c['name']:y_series_c['data']})
+        self.y_series.append({y_series_nc['name']:y_series_nc['data']})
 
     def create_y_series(self, outcome='count', desired_series='total', **desired_filters):
         """
@@ -293,10 +313,19 @@ class TimeDependentGraph(object):
                 q = Q()
 
             filters.update({'series':q})
-            self.__create_new_y_series(desired_series=desired_series, name=ser, outcome, **filters)
+            self.__create_new_y_series(desired_series=desired_series, name=ser, **filters)
             filters.pop('series')
 
+        # return {
+        #     'x': self.x_series,
+        #     'y': self.y_series,
+        #     'y_c': self.y_series_c
+        # }
+
+    def get_data(self, outcome, x_utc=True, include_cumulatives=False):
+
         return {
-            'x': self.x_series,
-            'y': self.y_series
+            'x': self.x_series_utc if x_utc else self.x_series,
+            'y': self.y_series,
+            'y_c': self.y_series_c if include_cumulatives else None
         }

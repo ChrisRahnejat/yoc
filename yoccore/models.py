@@ -3,7 +3,6 @@ import logging, json
 logger = logging.getLogger(__name__)
 
 from datetime import datetime
-
 from django.db import models
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -140,7 +139,7 @@ class Question(BaseModel):
 
         apps = ['Any', 'Manage Money', 'House Move', 'Spendorama', 'Any', 'Any', 'Any']
 
-        return app[self.question_page - 1]
+        return apps[self.question_page - 1]
 
 class Answer(BaseModel):
 
@@ -158,12 +157,15 @@ class Answer(BaseModel):
 
 
     # ANALYSIS SHORTCUTS FOR MAKING IT EASIER TO DEAL WITH DIFFERENT QUESTION TYPES
-    def get_topic(self):
+    def get_topic(self, *cleaned_answers):
         """ If Text then return CleanedAnswer topic else return Question topic """
-        x = list(self.cleanedanswer_set.all())
+        if cleaned_answers:
+            x = filter(lambda y: y.answer_id == self.id, cleaned_answers)
+        else:
+            x = list(self.cleanedanswer_set.all())
 
         if len(x) > 0:
-            return x[0].topic
+            return x[0].topic # todo: take topic w max count
         else:
             return self.question.default_topic()
 
@@ -171,16 +173,25 @@ class Answer(BaseModel):
         """ Return the app it probably refers to (by page) or just "Any" """
         return self.question.default_app()
 
-    def get_rating(self):
+    def get_rating(self, *cleaned_answers):
         """ Return the 1-5 rating (either user input or from CleanedAnswer) """
-        x = list(self.cleanedanswer_set.all())
+        if self.question.question_type == 'NM':
+            # It was a rating to begin with
+            try:
+                return int(self.answer_text)
+            except:
+                return None
 
-        if len(x) > 0:
-            return x[0].rating # It was text and we'll return the interpreted rating
-        elif self.question.question_type == 'NM':
-            return self.answer_text # It was a rating to begin with
         else:
-            return None # It's not text or a rating
+            if cleaned_answers:
+                x = filter(lambda y: y.answer_id == self.id, cleaned_answers)
+            else:
+                x = list(self.cleanedanswer_set.all())
+
+            if len(x) > 0:
+                return x[0].rating # It was text and we'll return the interpreted rating
+            else:
+                return None # It's not text or a rating
 
     def what_gender(self):
         try:

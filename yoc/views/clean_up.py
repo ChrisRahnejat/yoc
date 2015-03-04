@@ -10,9 +10,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.forms import ModelForm
 
-import validations
-
-
 class CleanUpform(ModelForm):
     class Meta:
         model = models.CleanedAnswer
