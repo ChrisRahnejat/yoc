@@ -25,7 +25,7 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 @register.filter
 def radio_range(val):
     try:
-        return xrange[val]
+        return xrange(val)
 
     except:
         return xrange(5)

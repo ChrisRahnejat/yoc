@@ -1,0 +1,27 @@
+#reports {
+    margin: 0px 20px 0px 20px;
+}
+
+.chart_section {
+    min-height: 500px;
+    border-top: 1px solid #6c9a92;;
+    /*border-left: 1px solid #6c9a92;;*/
+}
+
+.chart_header{
+    height: 2em;
+}
+
+.chart_section_toggle {
+    height: 2em;
+}
+
+.chart_container {
+    padding: 3px;
+    /*height: 90%*/
+}
+
+.wrapper {
+    width: 100%;
+}
+

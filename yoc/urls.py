@@ -18,6 +18,7 @@ urlpatterns = patterns('',
 
     url(r'^see_question/$', clean_up.see_question, name='see_question'),
     url(r'^give_feedback/$', clean_up.give_feedback, name='give_feedback'),
+    url(r'^reporting/$', clean_up.reporting, name='reporting'),
     url(r'^thanks/$', clean_up.thanks, name='thanks'),
 )
 urlpatterns += patterns('',

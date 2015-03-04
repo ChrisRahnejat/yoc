@@ -1,0 +1,33 @@
+{% extends "yoccore/base.html" %}
+{% load staticfiles %}
+{% load yoccore_extras %}
+
+{% block css %}
+    {{  block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/reporting.css' %}" />
+{% endblock css %}
+{% block js %}
+    <script src="{% static 'js/reports.js' %}"></script>
+{% endblock js %}
+
+{% block msg %}
+{% endblock msg %}
+
+{% block reports %}
+    <div class="grid">
+    {% for i in 8|radio_range %}
+        <div class="chart_section col-1-2" >
+            <div class="grid">
+                <div class="chart_header col-9-10"></div>
+                <div class="chart_section_toggle col-1-10">x</div>
+            </div>
+            <div class="grid chart_container"></div>
+        </div>
+
+        {% if forloop.counter|divisibleby:2 %}
+            </div><div class="grid">
+        {% endif %}
+    {% endfor %}
+    </div>
+
+{% endblock %}

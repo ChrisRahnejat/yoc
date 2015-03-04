@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 from yoccore import models
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.forms import ModelForm
 import validations
@@ -15,11 +15,17 @@ class CleanUpform(ModelForm):
     class Meta:
         model = models.CleanedAnswer
 
+@user_passes_test(lambda u: u.is_staff)
+def reporting(request):
+
+    template = 'yoccore/reporting.html'
+    return render(request, template, {})
+
 @login_required
 def thanks(request):
 
     template = 'yoccore/thanks.html'
-    return render(request, template, {} )
+    return render(request, template, {})
 
 @login_required
 def see_question(request):
