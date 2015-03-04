@@ -2,6 +2,7 @@ __author__ = 'aakh'
 
 import logging, json
 import calendar
+from operator import __or__ as OR
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 logger = logging.getLogger(__name__)
@@ -354,12 +355,12 @@ class TimeDependentGraph(object):
     def filtered_datum(self, desired_series, seriesQ):
 
         if desired_series in ['age', 'gender']:
-            yoc_sessions = [a.session for a in list(models.Answer.objects.filter(seriesQ['series']))]
-            answers = list(models.Answer.objects.filter(session__in=yoc_sessions).exclude(question__question_type__iexact='PD'))
+            yoc_sessions = [a.session for a in list(models.Answer.objects.filter(reduce(OR, seriesQ['series'])))]
+            answers = list(models.Answer.objects.filter(session__in=yoc_sessions)) #.exclude(question__question_type__iexact='PD'))
             cleaned_answers = models.CleanedAnswer.objects.filter(answer__in=answers, not_feedback=False)
 
         elif desired_series == 'topic':
-            cleaned_answers = list(models.CleanedAnswer.objects.filter(not_feedback=False).filter(seriesQ['series']))
+            cleaned_answers = list(models.CleanedAnswer.objects.filter(not_feedback=False).filter(reduce(OR, seriesQ['series'])))
 
             answers1 = models.Answer.objects.filter(id__in=[cleaned_answer.answer for cleaned_answer in cleaned_answers])
 
@@ -373,7 +374,7 @@ class TimeDependentGraph(object):
 
 
         elif desired_series == 'branch':
-            yoc_sessions = models.Session.objects.filter(seriesQ['series'])
+            yoc_sessions = models.Session.objects.filter(reduce(OR, seriesQ['series']))
             answers = models.Answer.objects.filter(session__in=yoc_sessions)
             cleaned_answers = models.CleanedAnswer.objects.filter(answer__in=answers, not_feedback=False)
 
@@ -413,29 +414,34 @@ class TimeDependentGraph(object):
 
         #apply series level filters
         try:
-            datum['yoc_sessions'] = filter(lambda x: x.location in zip(*seriesQ['sessionQ'].children)[1],
-                                       datum['yoc_sessions'])
+            temp = zip(*[x.children[0] for x in seriesQ['sessionQ']])[1]
+            datum['yoc_sessions'] = filter(lambda x: x.location in temp, datum['yoc_sessions'])
         except:
             logger.debug("seriesQ['sessionQ'] is empty")
 
         try:
-            datum['cleaned_answers'] = filter(lambda x: x.topic() in zip(*seriesQ['cleanedQ'].children)[1],
-                                       datum['cleaned_answers'])
+            temp = zip(*[x.children[0] for x in seriesQ['cleanedQ']])[1]
+            datum['cleaned_answers'] = filter(lambda x: x.topic() in temp, datum['cleaned_answers'])
         except:
             logger.debug("seriesQ['cleanedQ'] is empty")
 
         try:
-            datum['answers'] = filter(lambda x: x.answer_text in zip(*seriesQ['answersQ'].children)[1],
-                                       datum['answers'])
+            temp = zip(*[z.children[0] for z in seriesQ['answersQ']])[1]
+            temp2 = [x.session for x in datum['answers'] if x.answer_text in temp]
+            datum['answers'] = [y for y in datum['answers'] if y.session in temp2]
+
         except:
             logger.debug("seriesQ['answersQ'] is empty")
 
 
         try:
-            datum['answers'] = filter(lambda x: x.get_topic(*datum['cleaned_answers']) in zip(*seriesQ['cleanedQ'].children)[1],
-                                       datum['answers'])
+            temp = zip(*[x.children[0] for x in seriesQ['cleanedQ']])[1]
+            datum['answers'] = filter(lambda x: x.get_topic(*datum['cleaned_answers']) in temp, datum['answers'])
         except:
             logger.debug("seriesQ['cleanedQ'] is empty (topic filter)")
+
+        # get rid of personal questions
+        datum['answers'] = filter(lambda x: x.question.question_type != 'PD', datum['answers'])
 
         # start at 0, could start with all feedback before start but this could
         #  give very erroneous looking data if trying to crop into a data-set
@@ -502,21 +508,30 @@ class TimeDependentGraph(object):
         })
         # self.y_series.append({y_series_nc['name']:y_series_nc['data']})
 
+    def get_series_list(self):
+        return {
+            'age': ('>55','46-55','26-35','<18','36-45','18-25',),
+            'gender':('Male', 'Female', 'Would rather not disclose'),
+            'topic':zip(*models.CleanedAnswer.topics)[0],
+            'branch':zip(*models.Session.locations)[0],
+            'total':('total',)
+        }
+
     def create_y_series(self, desired_series='total', **desired_filters):
         """
 
         :param count, average,
 
-        :param desired_series: demographic, topic, branch. If missing, then ignored
+        :param desired_series: age, gender, topic, branch. If missing, then ignored
 
         :param fixed_filters: dictionary of filters to apply to this chart If missing, take TOTAL
             KEYS: age, gender, branch, topic
         :return:
         """
 
-        answersQ = Q()
-        cleanedQ = Q()
-        sessionQ = Q()
+        answersQ = []
+        cleanedQ = []
+        sessionQ = []
         self.y_series = []
         self.y_series_c = []
 
@@ -529,13 +544,7 @@ class TimeDependentGraph(object):
             'topic':cleanedQ
         }
 
-        series_lists = {
-            'age': ('>55','46-55','26-35','<18','36-45','18-25',),
-            'gender':('Male', 'Female'),
-            'topic':zip(*models.CleanedAnswer.topics)[0],
-            'branch':zip(*models.Session.locations)[0],
-            'total':('total',)
-        }
+        series_lists = self.get_series_list()
 
 
         if desired_series not in series_lists.keys():
@@ -549,17 +558,18 @@ class TimeDependentGraph(object):
         #build filters
         for f,v in desired_filters.iteritems():
 
-            if not isinstance(v, (list,tuple)): v = list(v)
-            else: v = list(set(v))
+            if isinstance(v, basestring): v = v.split(',')
+            elif not isinstance(v, (list,tuple)): v = list(v)
+            v = list(set(v))
 
             if f in ['age', 'gender']:
-                for vi in v: valid_filters[f].add(Q(answer_text=str(vi)), Q.OR)
+                for vi in v: valid_filters[f].append(Q(answer_text=str(vi)))#, Q.OR)
 
             elif f == 'topic':
-                for vi in v: valid_filters[f].add(Q(topic=str(vi)), Q.OR)
+                for vi in v: valid_filters[f].append(Q(topic=str(vi)))#, Q.OR)
 
             elif f == 'branch':
-                for vi in v: valid_filters[f].add(Q(location=str(vi)), Q.OR)
+                for vi in v: valid_filters[f].append(Q(location=str(vi)))#, Q.OR)
 
         filters = {'answersQ':answersQ,
                    'cleanedQ': cleanedQ,
@@ -578,15 +588,10 @@ class TimeDependentGraph(object):
             else:
                 q = Q()
 
-            filters.update({'series': q})
+            filters.update({'series': [q]})
             self.__create_new_y_series(desired_series=desired_series, name=ser, **filters)
             filters.pop('series')
 
-        # return {
-        #     'x': self.x_series,
-        #     'y': self.y_series,
-        #     'y_c': self.y_series_c
-        # }
 
     def get_data(self, x_utc=True, include_cumulatives=False):
         """
