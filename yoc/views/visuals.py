@@ -107,17 +107,19 @@ class TimeDependentGraph(object):
     def filtered_datum(self, desired_series, seriesQ):
 
         if desired_series in ['age', 'gender']:
-            answers = list(models.Answer.objects.filter(seriesQ['series']).exclude(question__question_type__iexact='PD'))
-            yoc_sessions = [a.session for a in answers]
+            yoc_sessions = [a.session for a in list(models.Answer.objects.filter(seriesQ['series']))]
+            answers = list(models.Answer.objects.filter(session__in=yoc_sessions).exclude(question__question_type__iexact='PD'))
             cleaned_answers = models.CleanedAnswer.objects.filter(answer__in=answers, not_feedback=False)
 
         elif desired_series == 'topic':
-            cleaned_answers = models.CleanedAnswer.objects.filter(not_feedback=False).filter(seriesQ['series'])
+            cleaned_answers = list(models.CleanedAnswer.objects.filter(not_feedback=False).filter(seriesQ['series']))
 
-            answers1 = models.Answer.objects.filter(id__in=cleaned_answers.values_list('answer', flat=True))
+            answers1 = models.Answer.objects.filter(id__in=[cleaned_answer.answer for cleaned_answer in cleaned_answers])
+
             # and get Answer objects where get_topic evaluates to the desired criteria
             answers2 = filter(lambda x: x.get_topic(*cleaned_answers) in zip(*seriesQ['series'].children)[1],
-                              models.Answer.objects.exclude(id__in=cleaned_answers.values_list('answer', flat=True)))
+                              models.Answer.objects.exclude(
+                                  id__in=[cleaned_answer.answer for cleaned_answer in cleaned_answers]))
 
             answers = list(set(list(answers1)+list(answers2)))
             yoc_sessions = [a.session_id for a in answers]
@@ -195,22 +197,24 @@ class TimeDependentGraph(object):
             # lower will be the bottom of the bin (inclusive)
             lower = self.x_series[i]
 
-            datum_capped = filter(lambda x: x.session.submit_date < upper.date(), datum['answers'])
-            cleaned_datum_capped = filter(lambda x: x.answer.session.submit_date < upper.date(), datum['cleaned_answers'])
+            datum_bounded = filter(lambda x: upper.date() > x.session.submit_date >= lower.date(), datum['answers'])
+            cleaned_datum_bounded = filter(lambda x: upper.date() > x.answer.session.submit_date >= lower.date(), datum['cleaned_answers'])
 
-            datum_bounded = filter(lambda x: x.session.submit_date >= lower.date(), datum_capped)
-            cleaned_datum_bounded = filter(lambda x: x.answer.session.submit_date >= lower.date(), cleaned_datum_capped)
+            # datum_bounded = filter(lambda x: x.session.submit_date >= lower.date(), datum_capped)
+            # cleaned_datum_bounded = filter(lambda x: x.answer.session.submit_date >= lower.date(), cleaned_datum_capped)
+
+            data_to_average = [x.get_rating(*cleaned_datum_bounded) for x in datum_bounded]
 
             logger.info('passing count')
             # Just count the feedback that this applies to
-            count_series_nc.append(len(datum_bounded))
+            count_series_nc.append(len([x for x in data_to_average if x is not None]))
+            # count_series_nc.append(len(datum_bounded))
+
 
             logger.info('passing average')
-            data_to_average = [x.get_rating(*cleaned_datum_bounded) for x in datum_bounded]
             avg_series_nc.append(validations.Numbers.average_list(data_to_average))
 
             logger.info('passing total')
-            # data_to_sum = [x.get_rating(*cleaned_datum_bounded) for x in datum_bounded]
             tot_series_nc.append(validations.Numbers.sum_list(data_to_average))
 
             count_series_c.append(sum(count_series_nc))
@@ -221,24 +225,40 @@ class TimeDependentGraph(object):
 
         y_series_c = {
             'cumulative': True,
-            'data': count_series_c, # todo: add different series types
+            'count': count_series_c,
+            'average': avg_series_c,
+            'sum': tot_series_c,
             'name': "%s (cumulative)" % name
         }
 
         y_series_nc = {
             'cumulative': False,
-            'data': count_series_nc,
+            'count': count_series_nc,
+            'average': avg_series_nc,
+            'sum': tot_series_nc,
             'name': "%s (non-cumulative)" % name
         }
 
         # append to output
-        self.y_series_c.append({y_series_c['name']:y_series_c['data']})
-        self.y_series.append({y_series_nc['name']:y_series_nc['data']})
+        self.y_series_c.append({y_series_c['name']:{
+            'count':y_series_c['count'],
+            'average':y_series_c['average'],
+            'sum':y_series_c['sum']
+            }
+        })
 
-    def create_y_series(self, outcome='count', desired_series='total', **desired_filters):
+        self.y_series.append({y_series_nc['name']:{
+            'count':y_series_nc['count'],
+            'average':y_series_nc['average'],
+            'sum':y_series_nc['sum']
+            }
+        })
+        # self.y_series.append({y_series_nc['name']:y_series_nc['data']})
+
+    def create_y_series(self, desired_series='total', **desired_filters):
         """
 
-        :param outcome: count, average,
+        :param count, average,
 
         :param desired_series: demographic, topic, branch. If missing, then ignored
 
@@ -251,6 +271,7 @@ class TimeDependentGraph(object):
         cleanedQ = Q()
         sessionQ = Q()
         self.y_series = []
+        self.y_series_c = []
 
         valid_outcomes = ['count', 'average',]
 
@@ -269,8 +290,6 @@ class TimeDependentGraph(object):
             'total':('total',)
         }
 
-        if outcome not in valid_outcomes:
-            outcome = 'count'
 
         if desired_series not in series_lists.keys():
             desired_series = 'total'
@@ -322,7 +341,14 @@ class TimeDependentGraph(object):
         #     'y_c': self.y_series_c
         # }
 
-    def get_data(self, outcome, x_utc=True, include_cumulatives=False):
+    def get_data(self, x_utc=True, include_cumulatives=False):
+        """
+
+        :param outcome: <string> must be count, average or sum
+        :param x_utc: boolean
+        :param include_cumulatives: boolean
+        :return:
+        """
 
         return {
             'x': self.x_series_utc if x_utc else self.x_series,
