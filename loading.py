@@ -100,6 +100,11 @@ class Load():
 				question_number = int(row[3])
 				answer_text = row[4]
 
+				if not answer_text:
+					continue
+
+				print session_id, self.session_ids_parsed[-1] if len(self.session_ids_parsed) > 0 else None
+
 				models.Answer.create(question_page, question_number, answer_text, session_id)
 
 		return True

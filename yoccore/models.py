@@ -81,8 +81,14 @@ class Session(BaseModel):
         try:
             submit_date = datetime.strptime(timestamp.strip(), '%d/%m/%Y %H:%M').date()
         except ValueError:
-            print "Error: %s was not a valid time stamp, session_key was %s" % (timestamp, session_key)
-            return False
+            try:
+                submit_date = datetime.strptime(timestamp.strip(), '%d-%m-%Y%n%H:%M').date()
+            except ValueError:
+                try:
+                    submit_date = datetime.strptime(timestamp.strip(), '%Y-%m-%d %H:%M:%S').date()
+                except ValueError:
+                    print "Error: %s was not a valid time stamp, session_key was %s" % (timestamp, session_key)
+                    return False
 
         location = username[0].upper()
         user_initials = ''.join([n for n in username if not n.isdigit()])[1:].lower()
