@@ -307,6 +307,9 @@ def feedback_quotes_for_app(request):
     context.update({'data': data})
 
     return render(request, template, context)
+    
+
+
 
     
 class TimeDependentGraph(object):
