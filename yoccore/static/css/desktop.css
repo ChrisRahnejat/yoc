@@ -55,7 +55,7 @@ h1, h2, h3 {
 
   .col-1-4 {
 
-    width: 25%;
+    width: 25%!important;
   }
 
   .col-1-6 {
@@ -70,6 +70,10 @@ h1, h2, h3 {
 
 .col-1-10 {
     width: 10%;
+  }
+
+.col-4-10 {
+    width: 40%;
   }
 
 .col-9-10 {
@@ -136,3 +140,6 @@ h1, h2, h3 {
   }
 
 
+[class*='col-4-']:last-of-type {
+  margin-left: 15%;
+}

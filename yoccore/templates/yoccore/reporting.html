@@ -6,6 +6,7 @@
     {{  block.super }}
     <link rel="stylesheet" type="text/css" href="{% static 'css/reporting.css' %}" />
 {% endblock css %}
+
 {% block js %}
     <script src="{% static 'js/reports.js' %}"></script>
 {% endblock js %}
@@ -15,17 +16,40 @@
 
 {% block reports %}
     <div class="grid">
-    {% for i in 8|radio_range %}
-        <div class="chart_section col-1-2" >
+    {% for chart_conf in chart_config %}
+        <div class="chart_section">
             <div class="grid">
-                <div class="chart_header col-9-10"></div>
+                <div class="chart_header col-9-10">{{forloop.counter}}</div>
                 <div class="chart_section_toggle col-1-10">x</div>
             </div>
-            <div class="grid chart_container" data-report_num="{{ forloop.counter }}">
-                <div class="filters">
-                    {# todo: create select box for each item in filter #}
+            <div class="grid chart_container">
+
+                <div class="grid filters col-9-10">
+                    {% for f in chart_conf.filters %}
+                        <select class="filter_select col-1-4"
+{#                                multiple="multiple"#}
+                            name="{{f.0}}-{{chart_conf.report_num}}"
+                                data-plc="{{ f.0 }}">
+                        <option class="filter_input" value disabled selected>pick {{f.0}}</option>
+                            {% for ch in f.1 %}
+                                <option value="{{ ch }}"
+{#                                        {% if ch.1 == question.fb.1%}#}
+{#                                        selected#}
+{#                                        {% endif %}#}
+                                        >{{ ch }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endfor %}
                 </div>
-                <div class="chart_area"></div>
+                <div class="refresh_chart col-1-10">
+                    <button>go</button>
+                </div>
+                <div class="chart_area"
+                     data-series="{{ chart_conf.series}}"
+                     data-report_num="{{ chart_conf.report_num }}"
+                        >
+
+                </div>
             </div>
         </div>
 

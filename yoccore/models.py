@@ -205,10 +205,10 @@ class Answer(BaseModel):
             Qfilter = Q()
             Qfilter.add(Q(session=self.session), Q.AND)
             Qfilter.add(Q(question__question_page=6), Q.AND)
-            Qfilter.add(Q(question__question_page=4), Q.AND)
+            Qfilter.add(Q(question__question_number=4), Q.AND)
             
-            ans = Answer.objects.get(Qfilter)
-        except Answer.DoesNotExist:
+            ans = Answer.objects.filter(Qfilter)[0]
+        except (Answer.DoesNotExist, IndexError):
             return None # Unknown!!!
 
         return ans.answer_text # Known - this is the answer
@@ -219,10 +219,10 @@ class Answer(BaseModel):
             Qfilter = Q()
             Qfilter.add(Q(session=self.session), Q.AND)
             Qfilter.add(Q(question__question_page=6), Q.AND)
-            Qfilter.add(Q(question__question_page=5), Q.AND)
+            Qfilter.add(Q(question__question_number=5), Q.AND)
             
-            ans = Answer.objects.get(Qfilter)
-        except Answer.DoesNotExist:
+            ans = Answer.objects.filter(Qfilter)[0]
+        except (Answer.DoesNotExist, IndexError):
             return None # Unknown!!!
 
         return ans.answer_text # Known - this is the answer

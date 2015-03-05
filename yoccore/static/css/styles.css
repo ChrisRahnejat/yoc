@@ -433,7 +433,7 @@ select {
     border-color: #e1955e;
     border-style: solid;
     border-width: 1px;
-    padding: 0 2px;
+    padding: auto 2px;
     font-family: info;
     height: 1.8em;
 }

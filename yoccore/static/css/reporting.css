@@ -19,9 +19,48 @@
 .chart_container {
     padding: 3px;
     /*height: 90%*/
+    cursor: pointer;
 }
 
 .wrapper {
     width: 100%;
 }
 
+
+.filter_select {
+    text-align: left;
+    font-size: 0.9em!important;
+    font-stretch: ultra-condensed;
+    margin: auto 2px;
+    height: 1.4em!important;
+}
+
+.filter_input {
+    /*width: 100%;*/
+    /*margin: 4px 0;*/
+
+}
+
+.quotes {
+    font-weight: 400;
+    font-size: 0.9em;
+}
+
+.quoteitem {
+    padding-left: 10px!important;
+    background-color: #6c9a92;
+}
+
+.quoteitem2 {
+    background-color: #e06a5d;
+}
+
+
+
+
+.quoteitem3 {
+    margin-top: -15px;
+    text-align: right;
+    font-size: 0.7em;
+    font-style: italic;
+}

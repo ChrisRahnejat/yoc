@@ -4,40 +4,77 @@ import logging, json
 logger = logging.getLogger(__name__)
 
 from yoccore import models
-
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.csrf import csrf_exempt  # , csrf_protect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
-from django.forms import ModelForm
+from django import forms
 import validations
 
-class CleanUpform(ModelForm):
+class CleanUpform(forms.ModelForm):
     class Meta:
         model = models.CleanedAnswer
 
+class IntForm(forms.Form):
+    intf = forms.IntegerField(min_value=1, max_value=7)
+
+
+@csrf_exempt
+@user_passes_test(lambda u: u.is_staff)
+def get_report_url(request):
+
+    form = IntForm(request.POST)
+
+    if form.is_valid():
+        urls = ("/grapher_view/","/grapher_view2/",#todo!!
+
+                "/get_some_quotes/","/grapher_view/",
+         "/grapher_view/","/get_name_rankings","/feedback_quotes_for_app/")
+
+        data = urls[form.cleaned_data['intf']-1]
+
+    else:
+        data = False
+
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+@csrf_exempt
 @user_passes_test(lambda u: u.is_staff)
 def reporting(request):
+
+    if request.method=="POST":
+        urls = ("/grapher_view/","/grapher_view2/",#todo!!
+
+                "/get_some_quotes/","/grapher_view/",
+         "/grapher_view/","/get_name_rankings","/feedback_quotes_for_app/")
+
+        intf = int(request.POST['intf'])-1
+        return redirect(urls[intf])
+
 
     template = 'yoccore/reporting.html'
 
     supported_ages = ['>55','46-55','26-35','<18','36-45','18-25']
     supported_genders = ['Male', 'Female', 'Would rather not disclose', 'Other']
-    age_filter = {'age':supported_ages}
-    gender_filter = {'gender':supported_genders}
-    branch_filter = {'branch':['m','s']}
+    age_filter = ('age',supported_ages)
+    gender_filter = ('gender',supported_genders)
+    branch_filter = ('branch',['Moorgate','Shoreditch'])
 
-    ctxt = {'filters':[
-        [gender_filter, age_filter],
-        [branch_filter, gender_filter, age_filter],
-        [branch_filter, gender_filter, age_filter],
-        [branch_filter, age_filter],
-        [branch_filter, gender_filter],
-        [branch_filter, gender_filter, age_filter],
-        [branch_filter, gender_filter, age_filter],
+    ctxt = {'chart_config':[
+        {'series': 'branch','report_num':1, 'filters':[gender_filter, age_filter]},
+        {'series': 'rating','report_num':2, 'filters':[branch_filter, gender_filter, age_filter]},
+        {'series':'quote', 'report_num':3, 'filters':[branch_filter, gender_filter, age_filter]},
+        {'series': 'gender','report_num':4, 'filters':[branch_filter, age_filter]},
+        {'series': 'age','report_num':5, 'filters':[branch_filter, gender_filter]},
+        {'series': 'app_names','report_num':6, 'filters':[branch_filter, gender_filter, age_filter]},
+        {'series': 'app_feedback','report_num':7, 'filters':[branch_filter, gender_filter, age_filter]},
     ]}
 
     return render(request, template, ctxt)
 
+@csrf_exempt
 @login_required
 def thanks(request):
 

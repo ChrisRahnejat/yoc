@@ -5,6 +5,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.csrf import csrf_exempt  # , csrf_protect
 from django.db.models import Q
 from django.http import HttpResponse
 from yoccore.models import *
@@ -12,6 +13,7 @@ from yoc.grapher import TimeDependentGraph
 import validations
 import random
 
+@csrf_exempt
 def grapher_view(request):
     """
         Should handle all numerical graph types, see do_grapher for accepable POST fields (below)
@@ -122,7 +124,7 @@ def grapher_view(request):
 
     return HttpResponse(json.dumps(data), content_type="application/json")
 
-
+@csrf_exempt
 def get_some_quotes(request):
     """
         POST - no inputs (because age and gender are not DB fields we can do a WHERE against)
@@ -179,7 +181,7 @@ def get_some_quotes(request):
             gender = q.answer.what_gender()
             age = q.answer.what_age()
 
-            output.append({'quote': quote, 'gender': gender, 'age': age})
+            output.append({'quote': quote.lower(), 'gender': gender, 'age': age})
 
         return output
 
@@ -190,7 +192,7 @@ def get_some_quotes(request):
 
     return HttpResponse(json.dumps(data), content_type="application/json")
 
-
+@csrf_exempt
 def get_name_rankings(request):
 
     def font_size_formula(ratio):
@@ -222,7 +224,7 @@ def get_name_rankings(request):
         number_of_answers = len(all_names)
 
         for name in different_names:
-            instances = all_names.count(name)
+            instances = len([x for x in all_names if x == name ])#.count(name)
             ratio = float(instances) / number_of_answers
             font_size = font_size_formula(ratio)
 
@@ -230,7 +232,7 @@ def get_name_rankings(request):
 
     return HttpResponse(json.dumps(data), content_type="application/json")
 
-
+@csrf_exempt
 def feedback_quotes_for_app(request):
     """
         POST
@@ -267,6 +269,6 @@ def feedback_quotes_for_app(request):
 
         quotes = CleanedAnswer.objects.filter(this_filter).values_list('answer__answer_text', flat=True)
 
-        data.setdefault(app, quotes)
+        data.setdefault(app, '|'.join(quotes))
 
     return HttpResponse(json.dumps(data), content_type="application/json")
