@@ -27,6 +27,7 @@ urlpatterns = patterns('',
     url(r'^get_some_quotes/$', visuals.get_some_quotes, name='get_some_quotes'),
     url(r'^get_name_rankings/$', visuals.get_name_rankings, name='get_name_rankings'),
     url(r'^feedback_quotes_for_app/$', visuals.feedback_quotes_for_app, name='feedback_quotes_for_app'),
+    url(r'^ratings_over_time/$', visuals.ratings_over_time, name='ratings_over_time'),
 )
 urlpatterns += patterns('',
                         (

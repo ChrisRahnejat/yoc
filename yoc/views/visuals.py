@@ -13,6 +13,8 @@ from yoc.grapher import TimeDependentGraph
 import validations
 import random
 
+from django.db import connection
+
 @csrf_exempt
 def grapher_view(request):
     """
@@ -154,7 +156,7 @@ def get_some_quotes(request):
     if number <1:
         positive_quotes = []
     else:
-        random_number_list = random.sample(range(number), 5)
+        random_number_list = random.sample(range(number), 3)
         positive_quotes = [lazy_list[i] for i in random_number_list]
 
     # Get 5 negative quotes
@@ -231,6 +233,80 @@ def get_name_rankings(request):
             data[app].setdefault(name, font_size)
 
     return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+def ratings_over_time(request):
+    """
+        No particular input
+
+        Returns same structure as the grapher
+        
+    """
+
+    def dictfetchall(cursor):
+        "Returns all rows from a cursor as a dict"
+        desc = cursor.description
+        return [
+            dict(zip([col[0] for col in desc], row))
+            for row in cursor.fetchall()
+        ]
+
+    cursor = connection.cursor()
+
+    query = """
+            SELECT x.fbdate, x.fbrating, count(x.fbid) FROM
+            (SELECT ses.submit_date::timestamp::date as fbdate, cast(ans.answer_text AS INT) as fbrating, ans.id as fbid 
+            FROM (SELECT * FROM yoccore_answer WHERE answer_text in ('1','2','3','4','5') ) as ans
+            INNER JOIN yoccore_session as ses
+            ON ans.session_id = ses.id
+            UNION
+            SELECT ses.submit_date::timestamp::date as fbdate, rating as fbrating, ans.id as fbid 
+            FROM (SELECT * FROM yoccore_cleanedanswer WHERE rating IS NOT NULL) as ca
+            INNER JOIN yoccore_answer as ans
+            ON ca.answer_id = ans.id
+            INNER JOIN yoccore_session as ses
+            ON ses.id = ans.session_id) as x GROUP BY x.fbdate, x.fbrating
+            """ # SQL YO
+
+    cursor.execute(query)
+
+    raw_data = dictfetchall(cursor)
+
+    x_series = map(lambda x: x['fbdate'], raw_data)  # if you need x_series in another format make sure to do it after the building of y_series data
+
+    x_series.sort()
+
+    ratings = [1, 2, 3, 4, 5]
+ 
+    y_series = {}
+
+    for r in ratings:
+        c = 0
+        data = []
+        cdata = []
+
+        for x in x_series:
+            point = filter(lambda x: x['fbdate'] == x and x['fbrating'] == r, raw_data)
+            
+            if not point:
+                point = 0
+            else:
+                point = point['fbid']
+
+            data.append(point)
+
+        c += point
+        cdata.append(c) 
+
+        y_series.setdefault('Rating %s non-cumulative' % r, {'count': data, 'cumulative': False})
+        y_series.setdefault('Rating %s cumulative' % r, {'count': cdata, 'cumulative': True })
+
+    out = {
+        'x_series': x_series,
+        'y_series': y_series
+    }
+
+    return HttpResponse(json.dumps(out), content_type="application/json")
 
 @csrf_exempt
 def feedback_quotes_for_app(request):
