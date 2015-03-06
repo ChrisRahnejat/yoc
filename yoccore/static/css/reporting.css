@@ -24,12 +24,13 @@
 .chart_container {
     padding: 3px;
     height: 450px;
-    cursor: pointer;
+    /*cursor: pointer;*/
 }
 
 .chart_area {
     padding: 3px;
-    height: 100%;
+    height: 95%;
+    overflow: hidden;
     /*cursor: pointer;*/
 }
 
@@ -70,23 +71,26 @@ svg{
 }
 
 .quoteitem2 {
+    padding-left: 10px!important;
     background-color: rgba(224, 106, 93, 0.43);
 }
 
 .quoteitem4 {
     margin: 4px!important;
+    padding-left: 10px!important;
     background-color: rgba(71, 218, 39, 0.23);
 }
 
 .quoteitem4b {
     margin: 4px!important;
+    padding-left: 10px!important;
     background-color: rgba(224, 106, 93, 0.43);
 }
 
 
-
 .quoteitem3 {
     margin-top: -15px;
+    padding-left: 10px!important;
     text-align: right;
     font-size: 0.7em;
     font-style: italic;
