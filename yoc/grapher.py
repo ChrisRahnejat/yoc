@@ -141,15 +141,15 @@ class TimeDependentGraph(object):
 
         # initialise
         # Non-cumulative
-        count_series_nc = [0]
-        avg_series_nc = [0]
-        tot_series_nc = [0]
+        count_series_nc = []
+        avg_series_nc = []
+        tot_series_nc = []
 
 
         # Cumulative
-        count_series_c = [0]
-        avg_series_c = [0]
-        tot_series_c = [0]
+        count_series_c = []
+        avg_series_c = []
+        tot_series_c = []
 
         # get answers, cleaned_answers and session data for the desired series eg gender = Male
         datum = self.filtered_datum(desired_series, seriesQ)
@@ -231,7 +231,7 @@ class TimeDependentGraph(object):
             'count': count_series_nc,
             'average': avg_series_nc,
             'sum': tot_series_nc,
-            'name': "%s (non-cumulative)" % name
+            'name': "%s" % name
         }
 
         # append to output

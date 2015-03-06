@@ -64,16 +64,28 @@ def reporting(request):
     age_filter = ('age',supported_ages)
     gender_filter = ('gender',supported_genders)
     branch_filter = ('branch',['Moorgate','Shoreditch'])
+    titles = (
+            'We have had %s conversations in the last 2 weeks'%models.Session.objects.all().count(),
+            '%s %% of feedback was positive'%10,
+            'Some quotes from customers',
+            'Feedback score by gender',
+            'Feedback score by age',
+            'Suggested names for apps',
+            'Feedback on the apps',
+        )
+
 
     ctxt = {'chart_config':[
         {'series': 'branch','report_num':1, 'filters':[gender_filter, age_filter]},
         # {'series': 'rating','report_num':2, 'filters':[branch_filter, gender_filter, age_filter]},
         {'series':'quote', 'report_num':3, 'filters':[branch_filter, gender_filter, age_filter]},
-        {'series': 'gender','report_num':4, 'filters':[branch_filter, age_filter]},
-        {'series': 'age','report_num':5, 'filters':[branch_filter, gender_filter]},
+        # {'series': 'gender','report_num':4, 'filters':[branch_filter, age_filter]},
+        # {'series': 'age','report_num':5, 'filters':[branch_filter, gender_filter]},
         # {'series': 'app_names','report_num':6, 'filters':[branch_filter, gender_filter, age_filter]},
         # {'series': 'app_feedback','report_num':7, 'filters':[branch_filter, gender_filter, age_filter]},
-    ]}
+        ],
+            'titles':titles,
+            }
 
     return render(request, template, ctxt)
 

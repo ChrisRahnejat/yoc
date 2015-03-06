@@ -16,7 +16,7 @@ import random
 from django.db import connection
 
 @csrf_exempt
-def grapher_view(request):
+def grapher_view(request, title):
     """
         Should handle all numerical graph types, see do_grapher for accepable POST fields (below)
         {
@@ -131,7 +131,11 @@ def grapher_view(request):
              }
              for series in data['y']]
 
-    return HttpResponse(json.dumps(d), content_type="application/json")
+        dat = {'title':'',
+               'y_axis':outcome.title(),
+               'dat':d}
+
+    return HttpResponse(json.dumps(dat), content_type="application/json")
 
 @csrf_exempt
 def get_some_quotes(request):

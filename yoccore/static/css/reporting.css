@@ -77,3 +77,20 @@ svg{
     font-size: 0.7em;
     font-style: italic;
 }
+
+.big-bottom-top{
+    margin-top: 20%;
+}
+
+.big-bottom-margin{
+    margin-bottom: 20%;
+}
+
+.pos, .neg{
+    display:none
+}
+
+/*g > text {*/
+    /*-webkit-transform:translate(3px, -10px);*/
+    /*-webkit-transform:rotate(45deg)*/
+/*}*/

@@ -249,11 +249,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'django': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
+        # 'django': {
+        #     'handlers': ['file'],
+        #     'propagate': True,
+        #     'level': 'DEBUG',
+        # },
         'app': {
             'handlers': ['file', 'console'],
             'level': 'DEBUG',

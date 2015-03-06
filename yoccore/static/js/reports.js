@@ -86,7 +86,7 @@ function extract_quote(chart_area, dat){
     ca.html(pos_div.concat(neg_div))
 }
 
-function nvd3chart(chart_area, dat){
+function nvd3chart(chart_area, dat, y_axis_label){
     var ca = $(chart_area)
     var ca_svg = ca.children('svg')[0]
     nv.addGraph(function() {
@@ -94,8 +94,9 @@ function nvd3chart(chart_area, dat){
 
         var chart = nv.models.multiBarChart()
             .color(d3.scale.category10().range())
+            .margin({left: 100})
             .reduceXTicks(false)   //If 'false', every single x-axis tick label will be rendered.
-            .rotateLabels(90)      //Angle to rotate x-axis labels.
+            // .rotateLabels(90)      //Angle to rotate x-axis labels.
             .showControls(true)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
             .groupSpacing(0.1)    //Distance between each group of bars.
 
@@ -104,9 +105,10 @@ function nvd3chart(chart_area, dat){
     chart.xAxis
         .tickFormat(function(d){
             return d3.time.format('%d-%b')(new Date(d))//(new Date(d))
-        });
+        })
 
     chart.yAxis
+        .axisLabel(y_axis_label)
         .tickFormat(d3.format(',.1f'));
 
     d3.select(ca_svg)
@@ -132,7 +134,7 @@ function get_vis(chart_area, dat){
                 //ca.data('series') == 'rating' ||
                 ca.data('series') == 'age'){
 
-            nvd3chart(chart_area, dat)
+            nvd3chart(chart_area, dat['dat'], dat['y_axis'] )
 
         }
         else if (ca.data('series') == 'quote'){
@@ -219,6 +221,8 @@ function do_chart_ajax(chart_section) {
 
         success: function(dat) {
             get_vis(ca, dat)
+            ca.children().fadeIn(250)
+            $(chart_section).children('chart_header').fadeIn(250)
         },
         error: function (jqXHR, exception) {
             chart_ajax_error(ca, exception);
