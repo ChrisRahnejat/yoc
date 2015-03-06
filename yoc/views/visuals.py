@@ -308,12 +308,13 @@ def ratings_over_time(*args, **kwargs):
         cdata = []
 
         for x in x_series:
-            point = filter(lambda x: x['fbdate'] == x and x['fbrating'] == r, raw_data)
+            point = filter(lambda y: y['fbdate'] == x and
+                                     y['fbrating'] == r, raw_data)
             
             if not point:
                 point = 0
             else:
-                point = point['fbid']
+                point = point[0]['count']
 
             data.append(point)
 
