@@ -66,34 +66,56 @@ svg{
 }
 
 .quoteitem {
+    margin: 2px!important;
     padding-left: 10px!important;
-    background-color: rgba(71, 218, 39, 0.23);
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: center;
+    background-color: rgba(71, 218, 39, 0.11);
+    border: 1px solid rgba(15, 78, 23, 0.100);
 }
 
 .quoteitem2 {
+    margin: 2px!important;
     padding-left: 10px!important;
-    background-color: rgba(224, 106, 93, 0.43);
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: center;
+    background-color: rgba(224, 106, 93, 0.11);
+    border: 1px solid rgba(224, 106, 93, 0.81);
 }
 
 .quoteitem4 {
-    margin: 4px!important;
+    margin: 2px!important;
     padding-left: 10px!important;
-    background-color: rgba(71, 218, 39, 0.23);
+    background-color: rgba(71, 218, 39, 0.11);
+    border: 1px solid rgba(15, 78, 23, 0.100);
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: center;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: center;
 }
 
 .quoteitem4b {
-    margin: 4px!important;
+    margin: 2px!important;
     padding-left: 10px!important;
-    background-color: rgba(224, 106, 93, 0.43);
+    background-color: rgba(224, 106, 93, 0.11);
+    border: 1px solid rgba(224, 106, 93, 0.81);
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: center;
 }
 
 
 .quoteitem3 {
-    margin-top: -15px;
+    margin: 1px!important;
     padding-left: 10px!important;
     text-align: right;
     font-size: 0.7em;
     font-style: italic;
+
 }
 
 .big-bottom-top{

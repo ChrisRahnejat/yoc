@@ -46,7 +46,7 @@ def reporting(request):
 
     if request.method=="POST":
         urls = (visuals.grapher_view,
-                visuals.grapher_view,#todo:2
+                visuals.ratings_over_time,#todo:2
                 visuals.get_some_quotes,
                 visuals.grapher_view,
                 visuals.grapher_view,

@@ -52,6 +52,45 @@ function clear_chart_ajax_error(chart_area){
 	$(chart_area).children(".chart_ajax_error").remove()
 }
 
+function extract_app_feedback(chart_area, dat){
+    var ca = $(chart_area);
+    var mm_list = split_string_by_pipe(dat['mm']);
+    var hm_list = split_string_by_pipe(dat['hm']);
+    var sp_list = split_string_by_pipe(dat['sp']);
+    var gen_list = split_string_by_pipe(dat['general']);
+
+    var pos_ul_open = "<ul class=\"quoteitem4\">";
+    var pos_ul_open_b = "<ul class=\"quoteitem4b\">";
+    //var pos_ul_open_close =    "em\">";
+    var ul_close = "<\/ul>";
+
+    var mm_div = "<div class=\"col-1-4 quotes pos\"><div>Manage Money</div>";
+    var sp_div = "<div class=\"col-1-4 quotes neg\"><div>Spenderorama</div>";
+    var hm_div = "<div class=\"col-1-4 quotes pos\"><div>House Move</div>";
+    var gen_div = "<div class=\"col-1-4 quotes neg\"><div>General</div>";
+
+    for (m1=0; m1<mm_list.length; m1++){
+        mm_div = mm_div.concat(pos_ul_open, mm_list[m1], ul_close);
+    }
+    mm_div = mm_div.concat("<\/div>");
+
+    for (m1=0; m1<sp_list.length; m1++){
+        sp_div = sp_div.concat(pos_ul_open_b, sp_list[m1], ul_close);
+    }
+    sp_div = sp_div.concat("<\/div>");
+
+    for (m1=0; m1<hm_list.length; m1++){
+        hm_div = hm_div.concat(pos_ul_open, hm_list[m1], ul_close);
+    }
+    hm_div = hm_div.concat("<\/div>");
+
+    for (m1=0; m1<gen_list.length; m1++){
+        gen_div = gen_div.concat(pos_ul_open_b, gen_list[m1], ul_close);
+    }
+    gen_div = gen_div.concat("<\/div>");
+
+    ca.html(mm_div.concat(sp_div).concat(hm_div).concat(gen_div))
+}
 
 function extract_app_names(chart_area, dat){
     var ca = $(chart_area);
@@ -63,24 +102,24 @@ function extract_app_names(chart_area, dat){
     var pos_ul_open_close =    "em\">";
     var ul_close = "<\/ul>";
 
-    var mm_div = "<div class=\"col-1-3 quotes pos\"><div>Manage Money</div>"
+    var mm_div = "<div class=\"col-1-3 quotes pos\"><div>Manage Money</div>";
     for (var key in mm_list){
-        mm_div = mm_div.concat(pos_ul_open,mm_list[key],pos_ul_open_close,key, ul_close)
+        mm_div = mm_div.concat(pos_ul_open,mm_list[key],pos_ul_open_close,key, ul_close);
     }
-    mm_div = mm_div.concat("<\/div>")
+    mm_div = mm_div.concat("<\/div>");
 
     var pos_ul_open_b = "<ul class=\"quoteitem4b\" style=\"font-size:";
-    var sp_div = "<div class=\"col-1-3 quotes neg\"><div>Spenderorama</div>"
+    var sp_div = "<div class=\"col-1-3 quotes neg\"><div>Spenderorama</div>";
     for (var key2 in sp_list){
         sp_div = sp_div.concat(pos_ul_open_b,sp_list[key2],pos_ul_open_close,key2, ul_close)
     }
-    sp_div = sp_div.concat("<\/div>")
+    sp_div = sp_div.concat("<\/div>");
 
-    var hm_div = "<div class=\"col-1-3 quotes pos\"><div>House Move</div>"
+    var hm_div = "<div class=\"col-1-3 quotes pos\"><div>House Move</div>";
     for (var key3 in hm_list){
         hm_div = hm_div.concat(pos_ul_open,hm_list[key3],pos_ul_open_close,key3, ul_close)
     }
-    hm_div = hm_div.concat("<\/div>")
+    hm_div = hm_div.concat("<\/div>");
 
     ca.html(mm_div.concat(sp_div).concat(hm_div))
 
@@ -96,7 +135,7 @@ function extract_quote(chart_area, dat){
     var ul_open2 = "<ul class=\"quoteitem3\">"
     var ul_close = "<\/ul>"
 
-    var pos_div = "<div class=\"col-4-10 quotes big-bottom-margin pos\">"
+    var pos_div = "<div class=\"col-4-10 quotes big-bottom-margin pos\"><div>Positive</div>"
     for (i=0; i<pos_list.length; i++){
         pos_div = pos_div.concat(pos_ul_open,pos_list[i].quote, ul_close)
 
@@ -106,7 +145,7 @@ function extract_quote(chart_area, dat){
     }
     pos_div = pos_div.concat("<\/div>")
 
-    var neg_div = "<div class=\"col-4-10 quotes big-top-margin neg\">"
+    var neg_div = "<div class=\"col-4-10 quotes big-top-margin neg\"><div>Negative</div>"
     for (i=0; i<neg_list.length; i++){
         neg_div = neg_div.concat(neg_ul_open,neg_list[i].quote, ul_close)
 
@@ -165,7 +204,7 @@ function get_vis(chart_area, dat){
 
         if (ca.data('series') == 'branch' ||
                 ca.data('series') == 'gender' ||
-                //ca.data('series') == 'rating' ||
+                ca.data('series') == 'rating' ||
                 ca.data('series') == 'age'){
 
             nvd3chart(chart_area, dat['dat'], dat['y_axis'] )
@@ -179,7 +218,7 @@ function get_vis(chart_area, dat){
             //ca.html("success")
         }
         else if(ca.data('series') == 'app_feedback'){
-            ca.html("success")
+            extract_app_feedback(chart_area, dat)
         }
         else {
             chart_ajax_error(chart_area, 'series')

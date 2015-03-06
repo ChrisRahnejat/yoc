@@ -168,7 +168,7 @@ def get_some_quotes(*args, **kwargs):
     if number <1:
         positive_quotes = []
     else:
-        random_number_list = random.sample(range(number), 3)
+        random_number_list = random.sample(range(number), 4)
         positive_quotes = [lazy_list[i] for i in random_number_list]
 
     # Get 5 negative quotes
@@ -244,15 +244,15 @@ def get_name_rankings(*args, **kwargs):
             ratio = float(instances) / number_of_answers
             font_size = font_size_formula(ratio)
 
-            app_data.setdefault(name, font_size)
+            app_data.setdefault(name.lower(), font_size)
 
         sorted_app_data = sorted(app_data.items(), key=operator.itemgetter(
             1), reverse=True)
 
         if len(sorted_app_data) > 7:
-            sorted_app_data = sorted_app_data[:8]
+            sorted_app_data = dict(sorted_app_data[:8])
 
-        data.setdefault(app, sorted_app_data)
+        data.update({app:sorted_app_data})
 
     return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -320,20 +320,23 @@ def ratings_over_time(*args, **kwargs):
             c += point
             cdata.append(c)
 
-        y_series.setdefault('Rating %s non-cumulative' % r, {'count': data, 'cumulative': False})
-        y_series.setdefault('Rating %s cumulative' % r, {'count': cdata, 'cumulative': True })
+        y_series.setdefault('Rating %s' % r, {'count': data, 'cumulative': False})
+        # y_series.setdefault('Rating %s cumulative' % r, {'count': cdata, 'cumulative': True })
+
+
 
     out = []
     for k, v in y_series.iteritems():
         out.append({
             'key': k,
-            'values': {
-                'x': [x.isoformat() for x in x_series],
-                'y': v['count']
-            }
+            'values': [{
+                'x':d[0].isoformat(),
+                'y':d[1]} for d in zip(x_series,v['count'])]
         })
 
-    return HttpResponse(json.dumps(out), content_type="application/json")
+    d = {'dat':out, 'y_axis':'count'}
+
+    return HttpResponse(json.dumps(d), content_type="application/json")
 
 @csrf_exempt
 def feedback_quotes_for_app(*args, **kwargs):
@@ -357,6 +360,13 @@ def feedback_quotes_for_app(*args, **kwargs):
         'Any': None
     }
 
+    short_names = {
+        'Manage Money': 'mm',
+        'House Move': 'hm',
+        'Spendorama': 'sp',
+        'Any': 'general'
+    }
+
     data = {}
 
     for app in apps:
@@ -372,6 +382,6 @@ def feedback_quotes_for_app(*args, **kwargs):
 
         quotes = CleanedAnswer.objects.filter(this_filter).values_list('answer__answer_text', flat=True)
 
-        data.setdefault(app, '|'.join(quotes))
+        data.setdefault(short_names[app], '|'.join(quotes))
 
     return HttpResponse(json.dumps(data), content_type="application/json")
