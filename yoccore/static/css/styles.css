@@ -82,7 +82,7 @@ span {
 .tr_badge {
     width: 100%;
     height: 100%;
-    background-image: url("../../images/TR-Reg-Final_white.png");
+    background-image: url("../images/TR-Reg-Final_white.png");
     background-size: contain;
     background-repeat: no-repeat;
 }
@@ -90,7 +90,7 @@ span {
 .br_badge {
     width: 100%;
     height: 100%;
-    background-image: url("../../images/BR whtie reg.png");
+    background-image: url("../images/BR whtie reg.png");
     background-size: contain;
     background-repeat: no-repeat;
 }

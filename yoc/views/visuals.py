@@ -16,7 +16,7 @@ import random
 from django.db import connection
 
 @csrf_exempt
-def grapher_view(request, title):
+def grapher_view(request):
     """
         Should handle all numerical graph types, see do_grapher for accepable POST fields (below)
         {
@@ -119,7 +119,7 @@ def grapher_view(request, title):
     x = return_cleaned_grapher_inputs(post)
 
     if x is False:
-        data = None
+        d = None
     else:
         outcome = 'count'
         desired_series, desired_filters = x

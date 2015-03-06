@@ -1,15 +1,20 @@
 #reports {
-    margin: 0px 20px 0px 20px;
+    margin: 0 20px 60px 20px;
 }
 
 .chart_section {
     min-height: 500px;
-    border-top: 1px solid #6c9a92;;
+    border-top: 1px solid #6c9a92;
+    background: #ffffff;
+    color: #2b2b2b;
+    margin-bottom: 5px;
     /*border-left: 1px solid #6c9a92;;*/
 }
 
 .chart_header{
-    height: 2em;
+    height: 1.5em;
+    padding-top: 5px;
+    padding-left: 10px;
 }
 
 .chart_section_toggle {
@@ -94,3 +99,14 @@ svg{
     /*-webkit-transform:translate(3px, -10px);*/
     /*-webkit-transform:rotate(45deg)*/
 /*}*/
+
+
+.chart_spinner {
+    width: 100%;
+    height: 100%;
+    background-image: url("../spinner.gif");
+    /*background-size: contain;*/
+    background-repeat: no-repeat;
+    background-size: auto;
+    background-position: center;
+}

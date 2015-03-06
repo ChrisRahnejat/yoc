@@ -35,11 +35,11 @@ function get_chart_area(chart_section){
 };
 
 function showspinner(chart_area){
-	$($(chart_area).children('.chart_ajax_error')[0]).fadeIn(250)
+	$($(chart_area).children('.chart_spinner')[0]).fadeIn(250)
 }
 
 function hidespinner(chart_area){
-	$($(chart_area).children('.chart_ajax_error')[0]).fadeOut(250)
+	$($(chart_area).children('.chart_spinner')[0]).fadeOut(250)
 }
 
 function chart_ajax_error(chart_area, msg){
@@ -123,8 +123,8 @@ function nvd3chart(chart_area, dat, y_axis_label){
 
 function get_vis(chart_area, dat){
     ca = $(chart_area)
-    console.log('get vis'.concat(ca))
-    console.log(dat)
+    //console.log('get vis'.concat(ca))
+    //console.log(dat)
     if (dat == null){
         chart_ajax_error(chart_area, 'null')
     }else{
@@ -156,32 +156,6 @@ function get_vis(chart_area, dat){
     }
 }
 
-function get_endpoint(chart_area){
-    var report_num = {}
-    report_num['intf'] = $(chart_area).data("report_num")
-
-    $.ajax({
-        type: "POST",
-        url: "/get_report_url/",
-        data: report_num,
-
-        success: function (dat) {
-            console.log(dat)
-            return dat
-        },
-        error: function (jqXHR, exception) {
-            return false
-        },
-        complete: function (jqXHR, textStatus) {
-            // submitRunning = false;
-            console.log('get_endpoint complete for '.concat(chart_area, textStatus) )
-        }
-    }).done(function () {
-            // submitRunning = false;
-            console.log('get_endpoint DONE for '.concat(chart_area) )
-        })
-}
-
 function get_post_data(chart_area){
     var ca = $(chart_area);
     var data = {};
@@ -196,17 +170,12 @@ function get_post_data(chart_area){
 function do_chart_ajax(chart_section) {
 
     var ca = get_chart_area(chart_section)
+    $(ca).children().hide(250)
     //var endpoint = get_endpoint(ca)
     var post_data = get_post_data(ca) //todo!
 
     clear_chart_ajax_error(ca)
     showspinner(ca)
-
-    //if (endpoint == false) {
-    //    chart_ajax_error(ca, 'get_endpoint')
-    //    console.log("no enpoint, kicking out")
-    //    return false
-    //}
 
     if (post_data == false) {
         chart_ajax_error(ca, 'post_data')
@@ -221,7 +190,7 @@ function do_chart_ajax(chart_section) {
 
         success: function(dat) {
             get_vis(ca, dat)
-            ca.children().fadeIn(250)
+            $(ca).children().fadeIn(250)
             $(chart_section).children('chart_header').fadeIn(250)
         },
         error: function (jqXHR, exception) {
@@ -230,10 +199,11 @@ function do_chart_ajax(chart_section) {
         },
         complete: function () {
             // submitRunning = false;
+            $(ca).children().show(250)
 
         }
     }).done(function () {
-        console.log('ajax DONE for '.concat($(ca)) )
+        //console.log('ajax DONE for '.concat($(ca)) )
         return true;
     })
 };
