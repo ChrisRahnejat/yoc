@@ -16,7 +16,7 @@ import operator
 from django.db import connection
 
 @csrf_exempt
-def grapher_view(request):
+def grapher_view(request, outcome='average'):
     """
         Should handle all numerical graph types, see do_grapher for accepable POST fields (below)
         {
@@ -122,7 +122,7 @@ def grapher_view(request):
         d, dat = None, None
 
     else:
-        outcome = 'count'
+        # outcome = 'count'
         desired_series, desired_filters = x
         data = do_grapher(desired_series, **desired_filters)
 
@@ -136,12 +136,10 @@ def grapher_view(request):
                'y_axis':outcome.title(),
                'dat':d}
 
-        print json.dumps(dat)
-
     return HttpResponse(json.dumps(dat), content_type="application/json")
 
 @csrf_exempt
-def get_some_quotes(request):
+def get_some_quotes(*args, **kwargs):
     """
         POST - no inputs (because age and gender are not DB fields we can do a WHERE against)
 
@@ -209,22 +207,26 @@ def get_some_quotes(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 @csrf_exempt
-def get_name_rankings(request):
+def get_name_rankings(*args, **kwargs):
 
     def font_size_formula(ratio):
-        return 0.5 + ratio * 1.75
+        return 0.8 + (ratio * 2)
 
     apps = { #page numbers
-        'Manage Money': 2, 
-        'House Move': 3, 
-        'Spendorama': 4
+        'mm': 2,
+        'hm': 3,
+        'sp': 4
     }
 
     # question numbers per page
     enums_q = 3 #which of the following names do you like?
     suggestion_q = 4 #do you have suggestions for other name?
 
-    data = {}
+    data = {
+        'mm': {},
+        'hm': {},
+        'sp': {}
+    }
 
     for app in apps:
         enum_question = Question.objects.get(Q(question_page=apps[app]) & Q(question_number=enums_q))
@@ -255,7 +257,7 @@ def get_name_rankings(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def ratings_over_time(request):
+def ratings_over_time(*args, **kwargs):
     """
         No particular input
 
@@ -334,7 +336,7 @@ def ratings_over_time(request):
     return HttpResponse(json.dumps(out), content_type="application/json")
 
 @csrf_exempt
-def feedback_quotes_for_app(request):
+def feedback_quotes_for_app(*args, **kwargs):
     """
         POST
 

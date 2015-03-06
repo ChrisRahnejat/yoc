@@ -53,8 +53,18 @@ def reporting(request):
                 visuals.get_name_rankings,
                 visuals.feedback_quotes_for_app,)
 
+        outcomes = (
+            'count',
+            'sum',
+            '',
+            'average',
+            'average',
+            '',
+            '',
+        )
+
         intf = int(request.POST['intf'])-1
-        return urls[intf](request)
+        return urls[intf](request, outcomes[intf])
 
 
     template = 'yoccore/reporting.html'
