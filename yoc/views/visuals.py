@@ -12,7 +12,7 @@ from yoccore.models import *
 from yoc.grapher import TimeDependentGraph
 import validations
 import random
-
+import operator
 from django.db import connection
 
 @csrf_exempt
@@ -101,7 +101,7 @@ def grapher_view(request):
                     keys_to_kill.append(k)
 
             elif k == 'topic':
-                if any([v not in zip(*models.CleanedAnswer.topics)[0] for v in desired_filters[k]]):
+                if any([v not in zip(*CleanedAnswer.topics)[0] for v in desired_filters[k]]):
                     logger.info("at least one value for topic filters was not supported")
                     keys_to_kill.append(k)
 
@@ -119,7 +119,8 @@ def grapher_view(request):
     x = return_cleaned_grapher_inputs(post)
 
     if x is False:
-        d = None
+        d, dat = None, None
+
     else:
         outcome = 'count'
         desired_series, desired_filters = x
@@ -134,6 +135,8 @@ def grapher_view(request):
         dat = {'title':'',
                'y_axis':outcome.title(),
                'dat':d}
+
+        print json.dumps(dat)
 
     return HttpResponse(json.dumps(dat), content_type="application/json")
 
@@ -221,11 +224,7 @@ def get_name_rankings(request):
     enums_q = 3 #which of the following names do you like?
     suggestion_q = 4 #do you have suggestions for other name?
 
-    data = {
-        'Manage Money': {},
-        'House Move': {},
-        'Spendorama': {}
-    }
+    data = {}
 
     for app in apps:
         enum_question = Question.objects.get(Q(question_page=apps[app]) & Q(question_number=enums_q))
@@ -236,12 +235,22 @@ def get_name_rankings(request):
         different_names = list(set(all_names))
         number_of_answers = len(all_names)
 
+        app_data = {}
+
         for name in different_names:
             instances = len([x for x in all_names if x == name ])#.count(name)
             ratio = float(instances) / number_of_answers
             font_size = font_size_formula(ratio)
 
-            data[app].setdefault(name, font_size)
+            app_data.setdefault(name, font_size)
+
+        sorted_app_data = sorted(app_data.items(), key=operator.itemgetter(
+            1), reverse=True)
+
+        if len(sorted_app_data) > 7:
+            sorted_app_data = sorted_app_data[:8]
+
+        data.setdefault(app, sorted_app_data)
 
     return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -306,16 +315,21 @@ def ratings_over_time(request):
 
             data.append(point)
 
-        c += point
-        cdata.append(c) 
+            c += point
+            cdata.append(c)
 
         y_series.setdefault('Rating %s non-cumulative' % r, {'count': data, 'cumulative': False})
         y_series.setdefault('Rating %s cumulative' % r, {'count': cdata, 'cumulative': True })
 
-    out = {
-        'x_series': x_series,
-        'y_series': y_series
-    }
+    out = []
+    for k, v in y_series.iteritems():
+        out.append({
+            'key': k,
+            'values': {
+                'x': [x.isoformat() for x in x_series],
+                'y': v['count']
+            }
+        })
 
     return HttpResponse(json.dumps(out), content_type="application/json")
 

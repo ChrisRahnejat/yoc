@@ -240,9 +240,10 @@ class Answer(BaseModel):
             print "Error: page %s, question %s not found!" % (question_page, question_number)
             return False
 
+        # Dont load numerical data from 24th feb or earlier
         if question_object.question_type == 'NM':
             feb24 = date(2015, 02, 24)
-            if session_object.submit_date < feb24:
+            if session_object.submit_date <= feb24:
                 return False
 
         if question_object.question_type == 'TX':

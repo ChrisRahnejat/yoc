@@ -150,7 +150,7 @@ class Load():
     def clean_up_duff_ratings(self):
         feb24 = date(2015, 02, 24)
         sessions_from_before_24feb = models.Session.objects.filter(
-            submit_date__lt=feb24)
+            submit_date__lte=feb24)
 
         this_filter = Q()
         this_filter.add(Q(session__in=sessions_from_before_24feb), Q.AND)
