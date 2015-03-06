@@ -52,6 +52,40 @@ function clear_chart_ajax_error(chart_area){
 	$(chart_area).children(".chart_ajax_error").remove()
 }
 
+
+function extract_app_names(chart_area, dat){
+    var ca = $(chart_area);
+    var mm_list = dat['mm'];
+    var hm_list = dat['hm'];
+    var sp_list = dat['sp'];
+
+    var pos_ul_open = "<ul class=\"quoteitem4\" style=\"font-size:";
+    var pos_ul_open_close =    "em\">";
+    var ul_close = "<\/ul>";
+
+    var mm_div = "<div class=\"col-1-3 quotes pos\"><div>Manage Money</div>"
+    for (var key in mm_list){
+        mm_div = mm_div.concat(pos_ul_open,mm_list[key],pos_ul_open_close,key, ul_close)
+    }
+    mm_div = mm_div.concat("<\/div>")
+
+    var pos_ul_open_b = "<ul class=\"quoteitem4b\" style=\"font-size:";
+    var sp_div = "<div class=\"col-1-3 quotes neg\"><div>Spenderorama</div>"
+    for (var key2 in sp_list){
+        sp_div = sp_div.concat(pos_ul_open_b,sp_list[key2],pos_ul_open_close,key2, ul_close)
+    }
+    sp_div = sp_div.concat("<\/div>")
+
+    var hm_div = "<div class=\"col-1-3 quotes pos\"><div>House Move</div>"
+    for (var key3 in hm_list){
+        hm_div = hm_div.concat(pos_ul_open,hm_list[key3],pos_ul_open_close,key3, ul_close)
+    }
+    hm_div = hm_div.concat("<\/div>")
+
+    ca.html(mm_div.concat(sp_div).concat(hm_div))
+
+}
+
 function extract_quote(chart_area, dat){
     var ca = $(chart_area);
     var pos_list = dat['positive_quotes'];
@@ -141,7 +175,8 @@ function get_vis(chart_area, dat){
             extract_quote(chart_area, dat)
         }
         else if(ca.data('series') == 'app_names'){
-            ca.html("success")
+            extract_app_names(chart_area, dat)
+            //ca.html("success")
         }
         else if(ca.data('series') == 'app_feedback'){
             ca.html("success")
@@ -158,10 +193,19 @@ function get_vis(chart_area, dat){
 
 function get_post_data(chart_area){
     var ca = $(chart_area);
+    var filters = $(ca).siblings('.filters').children('select');
     var data = {};
     data['desired_series'] = ca.data("series");
-    data['desired_filters'] = {};
-    data['intf'] = $(chart_area).data("report_num")
+    //data['desired_filters'] = {};
+
+    for (ii=0; ii < filters.length; ii++){
+        var this_filter = $(filters[ii]);
+        if (this_filter.val() != null && this_filter.val() == ""){
+            data[this_filter.data('plc')] = this_filter.val()
+        }
+    }
+
+    data['intf'] = $(chart_area).data("report_num");
 
     return data
 }

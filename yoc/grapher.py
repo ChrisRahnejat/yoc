@@ -254,10 +254,10 @@ class TimeDependentGraph(object):
 
     def get_series_list(self):
         return {
-            'age': ('>55','46-55','26-35','<18','36-45','18-25',),
+            'age': ('<18','18-25','26-35','36-45','46-55','>55',),
             'gender':('Male', 'Female', 'Would rather not disclose'),
             'topic':zip(*models.CleanedAnswer.topics)[0],
-            'branch':zip(*models.Session.locations)[0],
+            'branch':zip(*models.Session.locations)[1],
             'total':('total',)
         }
 
@@ -327,7 +327,7 @@ class TimeDependentGraph(object):
                 q = Q(topic=str(ser))
 
             elif desired_series == 'branch':
-                q = Q(location=str(ser))
+                q = Q(location=str(ser)[0])
 
             else:
                 q = Q()

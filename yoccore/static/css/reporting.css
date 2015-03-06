@@ -60,19 +60,28 @@ svg{
 }
 
 .quotes {
-    font-weight: 400;
+    font-weight: 600;
     font-size: 0.9em;
 }
 
 .quoteitem {
     padding-left: 10px!important;
-    background-color: #6c9a92;
+    background-color: rgba(71, 218, 39, 0.23);
 }
 
 .quoteitem2 {
-    background-color: #e06a5d;
+    background-color: rgba(224, 106, 93, 0.43);
 }
 
+.quoteitem4 {
+    margin: 4px!important;
+    background-color: rgba(71, 218, 39, 0.23);
+}
+
+.quoteitem4b {
+    margin: 4px!important;
+    background-color: rgba(224, 106, 93, 0.43);
+}
 
 
 

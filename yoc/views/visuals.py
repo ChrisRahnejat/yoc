@@ -16,7 +16,7 @@ import random
 from django.db import connection
 
 @csrf_exempt
-def grapher_view(request):
+def grapher_view(request, outcome='average'):
     """
         Should handle all numerical graph types, see do_grapher for accepable POST fields (below)
         {
@@ -113,7 +113,7 @@ def grapher_view(request):
 
         return desired_series, desired_filters
 
-    
+
     post = validations.clean_data(request)
 
     x = return_cleaned_grapher_inputs(post)
@@ -121,7 +121,7 @@ def grapher_view(request):
     if x is False:
         d = None
     else:
-        outcome = 'count'
+        # outcome = 'count'
         desired_series, desired_filters = x
         data = do_grapher(desired_series, **desired_filters)
 
@@ -138,7 +138,7 @@ def grapher_view(request):
     return HttpResponse(json.dumps(dat), content_type="application/json")
 
 @csrf_exempt
-def get_some_quotes(request):
+def get_some_quotes(*args, **kwargs):
     """
         POST - no inputs (because age and gender are not DB fields we can do a WHERE against)
 
@@ -206,15 +206,15 @@ def get_some_quotes(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 @csrf_exempt
-def get_name_rankings(request):
+def get_name_rankings(*args, **kwargs):
 
     def font_size_formula(ratio):
-        return 0.5 + ratio * 1.75
+        return 0.8 + (ratio * 2)
 
     apps = { #page numbers
-        'Manage Money': 2, 
-        'House Move': 3, 
-        'Spendorama': 4
+        'mm': 2,
+        'hm': 3,
+        'sp': 4
     }
 
     # question numbers per page
@@ -222,9 +222,9 @@ def get_name_rankings(request):
     suggestion_q = 4 #do you have suggestions for other name?
 
     data = {
-        'Manage Money': {},
-        'House Move': {},
-        'Spendorama': {}
+        'mm': {},
+        'hm': {},
+        'sp': {}
     }
 
     for app in apps:
@@ -241,12 +241,12 @@ def get_name_rankings(request):
             ratio = float(instances) / number_of_answers
             font_size = font_size_formula(ratio)
 
-            data[app].setdefault(name, font_size)
+            data[app].setdefault(name.lower(), font_size)
 
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def ratings_over_time(request):
+def ratings_over_time(*args, **kwargs):
     """
         No particular input
 
@@ -320,7 +320,7 @@ def ratings_over_time(request):
     return HttpResponse(json.dumps(out), content_type="application/json")
 
 @csrf_exempt
-def feedback_quotes_for_app(request):
+def feedback_quotes_for_app(*args, **kwargs):
     """
         POST
 
