@@ -3,6 +3,7 @@ import logging, json
 logger = logging.getLogger(__name__)
 
 from datetime import datetime
+from datetime import date
 from django.db import models
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -238,6 +239,11 @@ class Answer(BaseModel):
         except Question.DoesNotExist:
             print "Error: page %s, question %s not found!" % (question_page, question_number)
             return False
+
+        if question_object.question_type == 'NM':
+            feb24 = date(2015, 02, 24)
+            if session_object.submit_date < feb24:
+                return False
 
         if question_object.question_type == 'TX':
             done = False
