@@ -87,28 +87,29 @@ function extract_quote(chart_area, dat){
 }
 
 function nvd3chart(chart_area, dat){
+    var ca = $(chart_area)
+    var ca_svg = ca.children('svg')[0]
     nv.addGraph(function() {
 
+
         var chart = nv.models.multiBarChart()
-                .x(function(d) { return d['x'] })
-                .y(function(d) { return d['y']['count']})
-                .transitionDuration(350)
-                .color(d3.scale.category10().range())
-                .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
-                .rotateLabels(0)      //Angle to rotate x-axis labels.
-                .showControls(true)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
-                .groupSpacing(0.1)    //Distance between each group of bars.
+            .color(d3.scale.category10().range())
+            .reduceXTicks(false)   //If 'false', every single x-axis tick label will be rendered.
+            .rotateLabels(90)      //Angle to rotate x-axis labels.
+            .showControls(true)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
+            .groupSpacing(0.1)    //Distance between each group of bars.
+
     ;
 
     chart.xAxis
         .tickFormat(function(d){
-            return d3.time.format('%x')(new Date(d))
+            return d3.time.format('%d-%b')(new Date(d))//(new Date(d))
         });
 
     chart.yAxis
         .tickFormat(d3.format(',.1f'));
 
-    d3.select('#chart1 svg')
+    d3.select(ca_svg)
         .datum(dat)
         .call(chart);
 
@@ -193,17 +194,17 @@ function get_post_data(chart_area){
 function do_chart_ajax(chart_section) {
 
     var ca = get_chart_area(chart_section)
-    var endpoint = get_endpoint(ca)
+    //var endpoint = get_endpoint(ca)
     var post_data = get_post_data(ca) //todo!
 
     clear_chart_ajax_error(ca)
     showspinner(ca)
 
-    if (endpoint == false) {
-        chart_ajax_error(ca, 'get_endpoint')
-        console.log("no enpoint, kicking out")
-        return false
-    }
+    //if (endpoint == false) {
+    //    chart_ajax_error(ca, 'get_endpoint')
+    //    console.log("no enpoint, kicking out")
+    //    return false
+    //}
 
     if (post_data == false) {
         chart_ajax_error(ca, 'post_data')
@@ -213,7 +214,7 @@ function do_chart_ajax(chart_section) {
 
     $.ajax({
         type: "POST",
-        url: endpoint,
+        //url: endpoint, //default to current url
         data: post_data,
 
         success: function(dat) {
@@ -241,8 +242,8 @@ $('.chart_section_toggle').on('click', function(){
     do_chart_ajax(chart_section)
 });
 
-$('.chart_area, .refresh_chart').on('click', function(){
-    var t = $($(this)[0]).parent().parent()
+$('.refresh_chart').on('click', function(){
+    var t = $($(this)[0]).parent().parent() //todo:change to get_chart_section
     do_chart_ajax($(t))
 })
 

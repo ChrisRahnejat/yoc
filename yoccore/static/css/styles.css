@@ -26,9 +26,9 @@ input, select {
 }
 
 body {
-    color: rgb(61,64,57);
+    /*color: rgb(61,64,57);*/
     display: block;
-    background-color: #2b2b2b;
+    /*background-color: #2b2b2b;*/
     color: #ffffff;
     font-variant-caps: all-small-caps;
 }

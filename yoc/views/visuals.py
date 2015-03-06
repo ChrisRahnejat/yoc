@@ -121,10 +121,17 @@ def grapher_view(request):
     if x is False:
         data = None
     else:
+        outcome = 'count'
         desired_series, desired_filters = x
         data = do_grapher(desired_series, **desired_filters)
 
-    return HttpResponse(json.dumps(data), content_type="application/json")
+        d = [{
+                 'key':series['name'],
+                 'values':[{'x':d[0], 'y':d[1]} for d in zip(data['x'],series[outcome])]
+             }
+             for series in data['y']]
+
+    return HttpResponse(json.dumps(d), content_type="application/json")
 
 @csrf_exempt
 def get_some_quotes(request):
@@ -172,7 +179,7 @@ def get_some_quotes(request):
     if number <1:
         negative_quotes = []
     else:
-        random_number_list = random.sample(range(number), 5)
+        random_number_list = random.sample(range(number), 3)
         negative_quotes = [lazy_list[i] for i in random_number_list]
 
     def enhance_list(quote_list):

@@ -18,8 +18,21 @@
 
 .chart_container {
     padding: 3px;
-    /*height: 90%*/
+    height: 450px;
     cursor: pointer;
+}
+
+.chart_area {
+    padding: 3px;
+    height: 100%;
+    /*cursor: pointer;*/
+}
+
+svg{
+    margin-top:2%;
+    height: 90%;
+    width: 100%;
+    font-size: 0.8em!important;
 }
 
 .wrapper {

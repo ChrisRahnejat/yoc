@@ -235,19 +235,21 @@ class TimeDependentGraph(object):
         }
 
         # append to output
-        self.y_series_c.append({y_series_c['name']:{
-            'count':y_series_c['count'],
-            'average':y_series_c['average'],
-            'sum':y_series_c['sum']
-            }
-        })
+        self.y_series_c.append(y_series_c)
+        #     {y_series_c['name']:{
+        #     'count':y_series_c['count'],
+        #     'average':y_series_c['average'],
+        #     'sum':y_series_c['sum']
+        #     }
+        # })
 
-        self.y_series.append({y_series_nc['name']:{
-            'count':y_series_nc['count'],
-            'average':y_series_nc['average'],
-            'sum':y_series_nc['sum']
-            }
-        })
+        self.y_series.append(y_series_nc)
+        # {y_series_nc['name']:{
+        #     'count':y_series_nc['count'],
+        #     'average':y_series_nc['average'],
+        #     'sum':y_series_nc['sum']
+        #     }
+        # })
         # self.y_series.append({y_series_nc['name']:y_series_nc['data']})
 
     def get_series_list(self):
@@ -335,7 +337,7 @@ class TimeDependentGraph(object):
             filters.pop('series')
 
 
-    def get_data(self, x_utc=True, include_cumulatives=False):
+    def get_data(self, x_utc=False, include_cumulatives=False):
         """
 
         :param outcome: <string> must be count, average or sum
@@ -345,7 +347,7 @@ class TimeDependentGraph(object):
         """
 
         return {
-            'x': self.x_series_utc if x_utc else self.x_series,
+            'x': self.x_series_utc if x_utc else [x.strftime("%Y-%m-%d") for x in self.x_series],
             'y': self.y_series,
             'y_c': self.y_series_c if include_cumulatives else None
         }

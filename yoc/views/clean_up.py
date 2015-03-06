@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt  # , csrf_protect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django import forms
-import validations
+import validations, visuals
 
 class CleanUpform(forms.ModelForm):
     class Meta:
@@ -45,13 +45,16 @@ def get_report_url(request):
 def reporting(request):
 
     if request.method=="POST":
-        urls = ("/grapher_view/","/grapher_view2/",#todo!!
-
-                "/get_some_quotes/","/grapher_view/",
-         "/grapher_view/","/get_name_rankings","/feedback_quotes_for_app/")
+        urls = (visuals.grapher_view,
+                visuals.grapher_view,#todo:2
+                visuals.get_some_quotes,
+                visuals.grapher_view,
+                visuals.grapher_view,
+                visuals.get_name_rankings,
+                visuals.feedback_quotes_for_app,)
 
         intf = int(request.POST['intf'])-1
-        return redirect(urls[intf])
+        return urls[intf](request)
 
 
     template = 'yoccore/reporting.html'
@@ -64,12 +67,12 @@ def reporting(request):
 
     ctxt = {'chart_config':[
         {'series': 'branch','report_num':1, 'filters':[gender_filter, age_filter]},
-        {'series': 'rating','report_num':2, 'filters':[branch_filter, gender_filter, age_filter]},
+        # {'series': 'rating','report_num':2, 'filters':[branch_filter, gender_filter, age_filter]},
         {'series':'quote', 'report_num':3, 'filters':[branch_filter, gender_filter, age_filter]},
         {'series': 'gender','report_num':4, 'filters':[branch_filter, age_filter]},
         {'series': 'age','report_num':5, 'filters':[branch_filter, gender_filter]},
-        {'series': 'app_names','report_num':6, 'filters':[branch_filter, gender_filter, age_filter]},
-        {'series': 'app_feedback','report_num':7, 'filters':[branch_filter, gender_filter, age_filter]},
+        # {'series': 'app_names','report_num':6, 'filters':[branch_filter, gender_filter, age_filter]},
+        # {'series': 'app_feedback','report_num':7, 'filters':[branch_filter, gender_filter, age_filter]},
     ]}
 
     return render(request, template, ctxt)
