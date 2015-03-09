@@ -31,25 +31,26 @@
             <div class="grid chart_container">
 
                 <div class="grid filters col-9-10">
-                    {% for f in chart_conf.filters %}
-                        <select class="filter_select col-1-4"
+                     <div style="height:1em"></div>
+{#                    {% for f in chart_conf.filters %}#}
+{#                        <select class="filter_select col-1-4"#}
 {#                                multiple="multiple"#}
-                            name="{{f.0}}-{{chart_conf.report_num}}"
-                                data-plc="{{ f.0 }}">
-                        <option class="filter_input" value="" selected>pick {{f.0}}</option>
-                            {% for ch in f.1 %}
-                                <option value="{{ ch }}"
+{#                            name="{{f.0}}-{{chart_conf.report_num}}"#}
+{#                                data-plc="{{ f.0 }}">#}
+{#                        <option class="filter_input" value="" selected>pick {{f.0}}</option>#}
+{#                            {% for ch in f.1 %}#}
+{#                                <option value="{{ ch }}"#}
 {#                                        {% if ch.1 == question.fb.1%}#}
 {#                                        selected#}
 {#                                        {% endif %}#}
-                                        >{{ ch }}</option>
-                            {% endfor %}
-                        </select>
-                    {% endfor %}
+{#                                        >{{ ch }}</option>#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    {% endfor %}#}
                 </div>
                 <div class="refresh_chart col-1-10">
-                    <button>go</button>
-                </div>
+                    <button>Refresh</button>
+                </div><br/>
                 <div class="chart_area"
                      data-series="{{ chart_conf.series}}"
                      data-report_num="{{ chart_conf.report_num }}"

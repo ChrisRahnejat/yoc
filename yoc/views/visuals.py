@@ -334,7 +334,7 @@ def ratings_over_time(*args, **kwargs):
                 'x':d[0].isoformat(),
                 'y':d[1]} for d in zip(x_series,v['count'])]
         })
-
+    out = sorted(out,key = lambda kk: kk['key'])
     d = {'dat':out, 'y_axis':'count'}
 
     return HttpResponse(json.dumps(d), content_type="application/json")

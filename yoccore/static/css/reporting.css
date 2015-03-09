@@ -82,14 +82,14 @@ svg{
     padding-bottom: 2px;
     text-align: center;
     background-color: rgba(224, 106, 93, 0.11);
-    border: 1px solid rgba(224, 106, 93, 0.81);
+    /*border: 1px solid rgba(224, 106, 93, 0.81);*/
 }
 
 .quoteitem4 {
     margin: 2px!important;
     padding-left: 10px!important;
     background-color: rgba(71, 218, 39, 0.11);
-    border: 1px solid rgba(15, 78, 23, 0.100);
+    /*border: 1px solid rgba(15, 78, 23, 0.100);*/
     padding-top: 2px;
     padding-bottom: 2px;
     text-align: center;
@@ -102,7 +102,7 @@ svg{
     margin: 2px!important;
     padding-left: 10px!important;
     background-color: rgba(224, 106, 93, 0.11);
-    border: 1px solid rgba(224, 106, 93, 0.81);
+    /*border: 1px solid rgba(224, 106, 93, 0.81);*/
     padding-top: 2px;
     padding-bottom: 2px;
     text-align: center;

@@ -76,7 +76,7 @@ def reporting(request):
     branch_filter = ('branch',['Moorgate','Shoreditch'])
     titles = (
             'We have had %s conversations in the last 2 weeks'%models.Session.objects.all().count(),
-            '%s %% of feedback was positive'%100,
+            'Distribution of feedback by rating',
             'Some quotes from customers',
             'Feedback score by gender',
             'Feedback score by age',

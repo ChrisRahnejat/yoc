@@ -234,17 +234,18 @@ function get_post_data(chart_area){
     var ca = $(chart_area);
     var filters = $(ca).siblings('.filters').children('select');
     var data = {};
+    var desired_filters = {};
     data['desired_series'] = ca.data("series");
-    //data['desired_filters'] = {};
 
     for (ii=0; ii < filters.length; ii++){
         var this_filter = $(filters[ii]);
-        if (this_filter.val() != null && this_filter.val() == ""){
-            data[this_filter.data('plc')] = this_filter.val()
+        if (this_filter.val() != null && this_filter.val() != ""){
+            desired_filters[this_filter.data('plc')] = this_filter.val()
         }
     }
 
     data['intf'] = $(chart_area).data("report_num");
+    data['desired_filters'] = desired_filters;
 
     return data
 }
