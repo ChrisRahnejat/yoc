@@ -28,6 +28,10 @@ urlpatterns = patterns('',
     url(r'^get_name_rankings/$', visuals.get_name_rankings, name='get_name_rankings'),
     url(r'^feedback_quotes_for_app/$', visuals.feedback_quotes_for_app, name='feedback_quotes_for_app'),
     url(r'^ratings_over_time/$', visuals.ratings_over_time, name='ratings_over_time'),
+
+    # NVD3 URLS version 2
+    url(r'^grapher_view2/$', visuals2.grapher_view, name='grapher_view2'),
+    url(r'^get_quotes2/$', visuals2.get_quotes, name='get_quotes2'),
 )
 urlpatterns += patterns('',
                         (

@@ -1,6 +1,7 @@
 __author__ = 'Chris Rahnejat'
 
 import logging
+import random
 
 from django.db import connection
 
@@ -8,7 +9,7 @@ from django.db import connection
 logger = logging.getLogger(__name__)
 
 
-class Grapher(object):
+class Graph(object):
 
     _ratings_query = """
       SELECT fbdate, fbrating, _location as branch, gender, _age, topic, CASE WHEN question_page=2 THEN 'MM' WHEN question_page=3 THEN 'HM' WHEN question_page=4 THEN 'SP' ELSE 'Any' END AS app
@@ -63,14 +64,20 @@ class Grapher(object):
     """
 
     _feedback_query = """
-    SELECT question_text, answer_text, CASE WHEN question_page=2 THEN 'MM' WHEN question_page=3 THEN 'HM' WHEN question_page=4 THEN 'SP' ELSE 'Any' END AS app, CASE WHEN rating > 3 THEN 'Positive' WHEN rating < 3 THEN 'Negative' ELSE 'Neutral' END AS sentiment
-    FROM yoccore_answer
+    SELECT qn.question_text, ans.answer_text, CASE WHEN qn.question_page=2 THEN 'MM' WHEN qn.question_page=3 THEN 'HM' WHEN qn.question_page=4 THEN 'SP' ELSE 'Any' END AS app, CASE WHEN rating > 3 THEN 'Positive' WHEN rating < 3 THEN 'Negative' ELSE 'Neutral' END AS sentiment, genders.answer_text as gender, ages.answer_text as _age
+    FROM yoccore_answer as ans
     INNER JOIN yoccore_cleanedanswer
-    ON yoccore_answer.id = yoccore_cleanedanswer.answer_id
-    INNER JOIN yoccore_question
-    ON yoccore_answer.question_id = yoccore_question.id
-    WHERE question_type = 'TX' AND quotable=True
-    ORDER BY app, question_text, sentiment
+    ON ans.id = yoccore_cleanedanswer.answer_id
+    INNER JOIN yoccore_question as qn
+    ON ans.question_id = qn.id
+    INNER JOIN yoccore_session as sess
+    ON ans.session_id = sess.id
+    FULL JOIN (select * from yoccore_answer inner join yoccore_question on yoccore_answer.question_id = yoccore_question.id WHERE question_page=6 AND question_number=4) as genders
+    ON genders.session_id = sess.id
+    FULL JOIN (select * from yoccore_answer inner join yoccore_question on yoccore_answer.question_id = yoccore_question.id WHERE question_page=6 AND question_number=5) as ages
+    ON ages.session_id = sess.id
+    WHERE qn.question_type = 'TX' AND quotable=True
+    ORDER BY app, qn.question_text, sentiment
     """
 
     def __init__(self):
@@ -79,23 +86,21 @@ class Grapher(object):
 
         """
 
-        super(Grapher, self).__init__()
+        super(Graph, self).__init__()
 
-        self.__feedback_table = []
+        self.__quotes_table = []
         self.__ratings_table = []
 
         self.__execute_sql()
 
         self.__x_series = []
         self.__y_series = []
+        self.__quote_series = []
 
         self.__build_x_series()
 
-        self.filter = lambda x: True
-        # self.__filter = {
-        #     'Total': lambda x: True,
-        # }
-
+        self.__rating_filter = lambda x: True
+        self.__quote_filters = []
 
     def __execute_sql(self):
         """
@@ -118,7 +123,7 @@ class Grapher(object):
         cursor = connection.cursor()
 
         cursor.execute(self._feedback_query)
-        self.__feedback_table = _dict_fetch_all(cursor)
+        self.__quotes_table = _dict_fetch_all(cursor)
 
         cursor.execute(self._ratings_query)
         self.__ratings_table = _dict_fetch_all(cursor)
@@ -138,7 +143,7 @@ class Grapher(object):
     def get_ratings_data(self, desired_series, **desired_filters):
         """
         :param desired_series: 'age', 'topic', 'branch', 'gender', 'app',
-        'rating'
+        'rating', 'total'
         :param desired_filters: may have the following key / value pairings:
                     'age': list of age categories, subset of [''>55','46-55',
                     '26-35','<18','36-45','18-25']
@@ -151,15 +156,55 @@ class Grapher(object):
 
         """
 
-        self.__build_filters(**desired_filters)
+        self.__build_rating_filters(**desired_filters)
 
-        filtered_table = filter(self.__filter, self.__ratings_table)
+        filtered_table = filter(self.__rating_filter, self.__ratings_table)
 
         self.__build_series_from_filtered_table(filtered_table, desired_series)
 
         return self.__y_series
 
-    def __build_filters(self, **desired_filters):
+    def get_quotes_data(self, positive=True, negative=True, neutral=False,
+                        number=None):
+        print "yo", self.__quotes_table
+        self.__quote_series = []
+
+        self.__build_quote_filters(positive, negative, neutral)
+        print "hello", self.__quote_filters
+        for ft in self.__quote_filters:
+
+            filtered_table = filter(ft, self.__quotes_table)
+            print "hi", len(filtered_table)
+            self.__quote_series += self.__select_subset_from_list(
+                filtered_table, number)
+
+        return self.__quote_series
+
+    @staticmethod
+    def __select_subset_from_list(input, number):
+
+        if not number or number >= len(input):
+            return input
+
+        else:
+            random_list = random.sample(range(input), number)
+            return [input[i] for i in random_list]
+
+    def __build_quote_filters(self, positive, negative, neutral):
+
+        if positive:
+            self.__quote_filters.append(lambda x: x['sentiment'].lower() ==
+                                                  'positive')
+
+        if negative:
+            self.__quote_filters.append(lambda x: x['sentiment'].lower() ==
+                                                  'negative')
+
+        if neutral:
+            self.__quote_filters.append(lambda x: x['sentiment'].lower() ==
+                                                  'neutral')
+
+    def __build_rating_filters(self, **desired_filters):
 
         all_filters = [lambda x: True]
 
@@ -180,134 +225,81 @@ class Grapher(object):
         if 'app' in desired_filters:
             all_filters.append(lambda x: x['app'] in desired_filters['app'])
 
-        self.__filter = lambda x: all([f(x) for f in all_filters])
+        self.__rating_filter = lambda x: all([f(x) for f in all_filters])
 
     def __build_series_from_filtered_table(self, filtered_table,
                                            desired_series):
 
         self.__y_series = []
 
-        if desired_series == 'age':
-            desired_series = '_age'
+        if desired_series != 'total':
 
-        if desired_series == 'rating':
-            desired_series = 'fbrating'
+            if desired_series == 'age':
+                desired_series = '_age'
 
-        series_set = set([r[desired_series] for r in filtered_table])
+            if desired_series == 'rating':
+                desired_series = 'fbrating'
 
-        for serial in series_set:
+            series_set = set([r[desired_series] for r in filtered_table])
 
-            if desired_series == 'fbrating':
-                points = []
-                series_name = 'Rating %i' % serial
+            for serial in series_set:
 
-                sub_filtered_table = filter(lambda x: x['fbrating'] ==
+                if desired_series == 'fbrating':
+                    points = []
+                    series_name = 'Rating %i' % serial
+
+                    sub_filtered_table = filter(lambda x: x['fbrating'] ==
                                                         serial, filtered_table)
 
-                for x in self.__x_series:
-                    y = len([i for i in sub_filtered_table if
-                             i['fbdate'].isoformat() == x])
+                    for x in self.__x_series:
+                        y = len([i for i in sub_filtered_table if
+                                 i['fbdate'].isoformat() == x])
 
-                    points.append({'x': x, 'y': y})
+                        points.append({'x': x, 'y': y})
 
-                self.__y_series.append({
-                    'key': series_name,
-                    'values': points
+                    self.__y_series.append({
+                        'key': series_name,
+                        'values': points
+                        })
+
+                else:
+                    points = []
+                    series_name = serial
+
+                    sub_filtered_table = filter(lambda x: x[desired_series] ==
+                                                        serial, filtered_table)
+
+                    for x in self.__x_series:
+                        sub_sub_filtered_table = filter(lambda n:
+                                    n['fbdate'].isoformat() == x,
+                                                        sub_filtered_table)
+
+                        if len(sub_sub_filtered_table) < 1:
+                            y = 0
+
+                        else:
+                            y = sum([i['fbrating'] for i in
+                                     sub_sub_filtered_table]) / \
+                                float(len(sub_sub_filtered_table))
+
+                        points.append({'x': x, 'y': y})
+
+                    self.__y_series.append({
+                        'key': series_name,
+                        'values': points
                     })
 
-            else:
-                points = []
-                series_name = serial
+        else:
+            series_name = 'total'
+            points = []
 
-                sub_filtered_table = filter(lambda x: x[desired_series] ==
-                                                      serial, filtered_table)
+            for x in self.__x_series:
+                y = len([i for i in filtered_table if
+                         i['fbdate'].isoformat() == x])
 
-                for x in self.__x_series:
-                    sub_sub_filtered_table = filter(lambda n:
-                                n['fbdate'].isoformat() == x, sub_filtered_table)
+                points.append({'x': x, 'y': y})
 
-                    print "table", sub_sub_filtered_table
-                    print "x", x
-
-                    if len(sub_sub_filtered_table) < 1:
-                        y = 0
-
-                    else:
-                        y = sum([i['fbrating'] for i in
-                                 sub_sub_filtered_table]) / \
-                            float(len(sub_sub_filtered_table))
-
-                    points.append({'x': x, 'y': y})
-
-                self.__y_series.append({
-                    'key': series_name,
-                    'values': points
-                })
-
-
-    # def __build_filters(self, **desired_filters):
-    #
-    #     self.__filter = {
-    #         'Total': lambda x: True,
-    #     }
-    #
-    #     print desired_filters
-    #
-    #     if 'age' in desired_filters:  # accepts Null
-    #         for value in desired_filters['age']:
-    #             if value:
-    #                 self.__filter.update({
-    #                     value: lambda x: x['_age'] == value
-    #                 })
-    #
-    #             else:
-    #                 self.__filter.update({
-    #                     'Age not specified': lambda x: x['_age'] == None
-    #                 })
-    #
-    #     if 'gender' in desired_filters:  # accepts Null
-    #         for value in desired_filters['gender']:
-    #             if value:
-    #                 self.__filter.update({
-    #                     value: lambda x: x['gender'] == value
-    #                 })
-    #             else:
-    #                 self.__filter.update({
-    #                     'Gender not specified': lambda x: x['gender'] == None
-    #                 })
-    #
-    #     if 'branch' in desired_filters:  # doesn't accept Null
-    #         for value in desired_filters['branch']:
-    #             if value:
-    #                 self.__filter.update({
-    #                     value: lambda x: x['branch'] == value
-    #                 })
-    #
-    #     if 'topic' in desired_filters:  # accepts Null
-    #         topics = zip(*models.CleanedAnswer.topics)
-    #         for value in desired_filters['topic']:
-    #             if value:
-    #                 self.__filter.update({
-    #                     topics[1][topics[0].index(value)]: lambda x: x['topic']
-    #                                                                == value
-    #                 })
-    #             else:
-    #                 self.__filter.update({
-    #                     'Topic unknown': lambda x: x['topic'] == None
-    #                 })
-    #
-    #     if 'app' in desired_filters:  # doesn't accept Null
-    #         appss = {
-    #             'MM': 'Manage Money',
-    #             'HM': 'House Move',
-    #             'SP': 'Spendorama'
-    #         }
-    #         for value in desired_filters['app']:
-    #             if value != 'Any':
-    #                 self.__filter.update({
-    #                     value: lambda x: x['app'] == value
-    #                 })
-    #             else:
-    #                 self.__filter.update({
-    #                     'Not app-specific': lambda x: x['app'] in [value, None]
-    #                 })
+            self.__y_series.append({
+                'key': series_name,
+                'values': points
+            })
