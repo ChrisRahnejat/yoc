@@ -186,8 +186,11 @@ class Graph(object):
         if not number or number >= len(array):
             return array
 
+        elif not array:
+            return []
+
         else:
-            random_list = random.sample(range(array), number)
+            random_list = random.sample(range(len(array)), number)
             return [array[i] for i in random_list]
 
     def __build_quote_filters(self, positive, negative, neutral):
