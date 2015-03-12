@@ -166,29 +166,32 @@ class Graph(object):
 
     def get_quotes_data(self, positive=True, negative=True, neutral=False,
                         number=None):
-        print "yo", self.__quotes_table
+
         self.__quote_series = []
 
         self.__build_quote_filters(positive, negative, neutral)
-        print "hello", self.__quote_filters
+
         for ft in self.__quote_filters:
 
             filtered_table = filter(ft, self.__quotes_table)
-            print "hi", len(filtered_table)
+
             self.__quote_series += self.__select_subset_from_list(
                 filtered_table, number)
 
         return self.__quote_series
 
     @staticmethod
-    def __select_subset_from_list(input, number):
+    def __select_subset_from_list(array, number):
 
-        if not number or number >= len(input):
-            return input
+        if not number or number >= len(array):
+            return array
+
+        elif not array:
+            return []
 
         else:
-            random_list = random.sample(range(input), number)
-            return [input[i] for i in random_list]
+            random_list = random.sample(range(len(array)), number)
+            return [array[i] for i in random_list]
 
     def __build_quote_filters(self, positive, negative, neutral):
 
