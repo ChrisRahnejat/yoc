@@ -21,6 +21,13 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 # @register.filter
 # def is_radio(val):
 #     return val in zip(*mcq_types)[0]
+@register.filter
+def new_third(ls, idx):
+    thirds = 1 + len(ls)/3
+
+    return idx % thirds == 0
+
+
 
 @register.filter
 def radio_range(val):

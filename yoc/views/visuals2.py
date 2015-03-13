@@ -3,13 +3,14 @@ __author__ = 'krhn'
 import csv as csvmod
 import logging
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, get_object_or_404, redirect
 
 import validations
 from yoccore.models import *
 from yoc.grapher2 import Graph
-
+from yoc.webforms import reportforms
 
 logger = logging.getLogger(__name__)
 
@@ -131,15 +132,32 @@ def get_quotes(request):
 
     """
 
-    post = validations.clean_data(request)
+    # post = validations.clean_data(request)
+    if request.method != 'POST':
+        template = 'yoccore/quotes.html'
 
-    csv = post.get('csv', False)
-    positives = post.get('positive', True)
-    negatives = post.get('negative', True)
-    neutrals = post.get('neutral', False)
-    number = post.get('number', None)  # None means ALL
+        quotes = Graph().get_quotes_data(True, True, True, None)
 
-    if number < 1:
+        return render(request, template, {'quotes':quotes})
+
+    fm = reportforms.GrapherForm(request.POST)
+
+    if fm.is_valid():
+        cd = fm.cleaned_data
+
+        csv = cd.get('csv', False)
+        positives = cd.get('positives', True)
+        negatives = cd.get('negatives', True)
+        neutrals = cd.get('neutrals', False)
+        number = cd.get('number', None)  # None means ALL
+
+    else:
+        resp = { 'success' : False, 'errors' : [(k, v[0]) for k, v in fm.errors.items()] }
+        return HttpResponseBadRequest(json.dumps(resp), content_type="application/json")
+
+
+
+    if number and number < 1:
         number = 1
 
     quotes = Graph().get_quotes_data(positives, negatives, neutrals, number)

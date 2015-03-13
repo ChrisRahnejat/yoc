@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 class Graph(object):
 
     _ratings_query = """
-      SELECT fbdate, fbrating, _location as branch, gender, _age, topic, CASE WHEN question_page=2 THEN 'MM' WHEN question_page=3 THEN 'HM' WHEN question_page=4 THEN 'SP' ELSE 'Any' END AS app
+      SELECT fbdate, fbrating, _location as branch, gender, agess, topic, CASE WHEN question_page=2 THEN 'MM' WHEN question_page=3 THEN 'HM' WHEN question_page=4 THEN 'SP' ELSE 'Any' END AS app
         FROM
-          (SELECT COALESCE(sess.session_id, demographics.session_id) as session_id, sess.submit_date as submit_date, sess.location as _location, demographics.gender, demographics._age
+          (SELECT COALESCE(sess.session_id, demographics.session_id) as session_id, sess.submit_date as submit_date, sess.location as _location, demographics.gender, demographics.agess
           FROM (
-            SELECT COALESCE(genders.session_id, ages.session_id) as session_id, genders.gender, ages._age
+            SELECT COALESCE(genders.session_id, ages.session_id) as session_id, genders.gender, ages.agess
             FROM
               (SELECT answer_text as gender, session_id
                 FROM yoccore_answer
@@ -28,7 +28,7 @@ class Graph(object):
                   ) as qn
                 ON qn.id = yoccore_answer.question_id) as genders
             FULL JOIN
-              (SELECT answer_text as _age, session_id
+              (SELECT answer_text as agess, session_id
                 FROM yoccore_answer
                 INNER JOIN (
                   SELECT *
@@ -60,11 +60,11 @@ class Graph(object):
             INNER JOIN yoccore_question as que
             ON que.id = ans.question_id) as x) as foo
           ON foo.session_id = demosess.session_id
-          ORDER BY fbdate, app, topic, branch, gender, _age
+          ORDER BY fbdate, app, topic, branch, gender, agess
     """
 
     _feedback_query = """
-    SELECT qn.question_text, ans.answer_text, CASE WHEN qn.question_page=2 THEN 'MM' WHEN qn.question_page=3 THEN 'HM' WHEN qn.question_page=4 THEN 'SP' ELSE 'Any' END AS app, CASE WHEN rating > 3 THEN 'Positive' WHEN rating < 3 THEN 'Negative' ELSE 'Neutral' END AS sentiment, genders.answer_text as gender, ages.answer_text as _age
+    SELECT qn.question_text, ans.answer_text, CASE WHEN qn.question_page=2 THEN 'MM' WHEN qn.question_page=3 THEN 'HM' WHEN qn.question_page=4 THEN 'SP' ELSE 'Any' END AS app, CASE WHEN rating > 3 THEN 'Positive' WHEN rating < 3 THEN 'Negative' ELSE 'Neutral' END AS sentiment, genders.answer_text as gender, ages.answer_text as agess
     FROM yoccore_answer as ans
     INNER JOIN yoccore_cleanedanswer
     ON ans.id = yoccore_cleanedanswer.answer_id
@@ -169,7 +169,7 @@ class Graph(object):
 
         self.__quote_series = []
 
-        self.__build_quote_filters(positive, negative, neutral)
+        self.__build_quote_filters(positive, negative, neutral) #todo: we can make this nice and generic ...
 
         for ft in self.__quote_filters:
 
@@ -194,7 +194,8 @@ class Graph(object):
             return [array[i] for i in random_list]
 
     def __build_quote_filters(self, positive, negative, neutral):
-
+        # print positive, negative, neutral
+        # print type(positive), type(negative), type(neutral)
         if positive:
             self.__quote_filters.append(lambda x: x['sentiment'].lower() ==
                                                   'positive')
@@ -212,7 +213,7 @@ class Graph(object):
         all_filters = [lambda x: True]
 
         if 'age' in desired_filters:
-            all_filters.append(lambda x: x['_age'] in desired_filters['age'])
+            all_filters.append(lambda x: x['agess'] in desired_filters['age'])
 
         if 'topic' in desired_filters:
             all_filters.append(lambda x: x['topic'] in desired_filters['topic'])
@@ -238,7 +239,7 @@ class Graph(object):
         if desired_series != 'total':
 
             if desired_series == 'age':
-                desired_series = '_age'
+                desired_series = 'agess'
 
             if desired_series == 'rating':
                 desired_series = 'fbrating'
